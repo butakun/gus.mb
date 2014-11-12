@@ -1,0 +1,35 @@
+% $Id: GoverningEquations.tex 272 2013-02-21 08:09:44Z kato $
+
+\section{Governing Equations}
+
+\subsection{Nondimensionalization}
+
+The governing equations are nondimensionalized with the criteria that the resulting set of equations be easily applicable to both internal and external flows and that they render the equation of state
+\begin{eqnarray*}
+p &=& \rho R T \\
+  &=& \rho e \left(\gamma - 1\right)
+\end{eqnarray*}
+as simple as possible from the viewpoint of modular implementation. For these reasons, the choice has been made to use the following nondimensionalization.
+\begin{eqnarray*}
+x^* &=& \frac{x}{L} \\
+t^* &=& \frac{t c_{\infty}}{L} \\
+\mathbf{V}^* &=& \frac{V}{c_{\infty}} \\
+\rho^* &=& \frac{\rho}{\rho_\infty} \\
+p^* &=& \frac{p}{\rho_\infty c_\infty^2} \left( = \frac{p}{\gamma_\infty p_\infty} \right) \\
+T^* &=& \frac{T R_\infty}{c_\infty^2} \left( = \frac{T}{\gamma_\infty T_\infty} \right) \\
+e^* &=& \frac{e}{c_\infty^2} \\
+R^* &=& \frac{R}{R_\infty} \\
+\mu^* &=& \frac{\mu}{\mu_\infty}
+\end{eqnarray*}
+where the quantities with asterisk denote nondimentionalized variables.
+
+%In a similar fashion, the solution variables involved in turbulence modeling can be nondimensionalized as follows. The $k-\omega$ two-equation model solves turbulence kinetic energy, $k$, and specific dissipation rate, $\omega$, which are nondimensionalized as
+%\begin{eqnarray*}
+%k^* &=& \frac{k}{c_\infty^2} \\
+%\omega^* &=& \frac{\omega L}{c_\infty} \\
+%\mu_T^* &=& \frac{\mu_T}{\mu_\infty}
+%	= \frac{\rho k}{\omega \mu_\infty}
+%	= \frac{\rho^* \rho_\infty k^* c_\infty^2}{\omega^* \frac{c_\infty}{L} \mu_\infty}
+%	= \left(\frac{\rho_\infty c_\infty L}{\mu_\infty}\right) \frac{\rho^* k^*}{\omega^*}
+%	= Re \frac{\rho^* k^*}{\omega^*}
+%\end{eqnarray*}

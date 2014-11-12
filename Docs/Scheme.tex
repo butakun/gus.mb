@@ -1,0 +1,249 @@
+\documentclass[a4paper]{article}
+
+\usepackage[margin = 2.0cm]{geometry}
+\usepackage{graphicx}
+\usepackage{color}
+
+\begin{document}
+
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\E}{\mathbf{E}}
+\newcommand{\F}{\mathbf{F}}
+\newcommand{\G}{\mathbf{G}}
+\newcommand{\HH}{\mathbf{H}}
+\newcommand{\I}{\mathbf{I}}
+\newcommand{\w}{\mathbf{w}}
+\newcommand{\R}{\mathbf{R}}
+\newcommand{\Sn}{\mathbf{S}}
+
+\input{TurbulenceModels}
+
+\section{Governing Equation}
+\begin{equation}
+\frac{\partial\U}{\partial t} + \R\left(\U\right) = 0
+\label{Eq:GovEq}
+\end{equation}
+
+\input{GoverningEquations}
+
+\section{Temporal Integration}
+
+\subsection{Steady Simulation}
+We seek a solution to the governing equation
+\begin{equation}
+\R\left(\U\right) = 0
+\end{equation}
+which can be iteratively solved using Newton's method
+\begin{equation}
+\left(\frac{\partial \R}{\partial\U}\right)^k
+\Delta \U^k
+=
+\R\left(\U^k\right)
+\end{equation}
+where $\Delta\U^k = \U^{k + 1} - \U^k$.
+
+\subsection{Unsteady Simulation}
+
+Approximating the time derivative term in Eq.~\ref{Eq:GovEq} with the first-order backward finite difference we obtain the so-called first-order backward Euler scheme, which is given as follows.
+\begin{equation}
+\frac{\U^{n+1} - \U^n}{\Delta t} + \R\left(\U^{n+1}\right) = 0
+\label{Eq:FirstOrderBackwardEuler}
+\end{equation}
+For second-order temporal accuracy, three-point backward differencing of the time derivative yields
+\begin{equation}
+\frac{3\U^{n+1} - 4\U^n + \U^{n-1}}{2\Delta t} + \R\left(\U^{n+1}\right) = 0.
+\label{Eq:SecondOrderBackwardEuler}
+\end{equation}
+
+\subsubsection{Dual Time Stepping}
+
+We introduce an artificial time, $\tau$, along which integration is carried out. By separating the physical time, $t$, from numerical integration any implicit method can be employed (in the artificial time) to advance the solution in the physical time regardless of the physical time step.
+\begin{equation}
+\frac{\partial\U}{\partial t} + \frac{\partial\U}{\partial \tau} + \R\left(\U\right) = 0
+\end{equation}
+Denoting the physical time index with $n$ and the artificial time index with $k$, we have
+\[
+\frac{3\U^{n+1} - 4\U^n + \U^{n-1}}{2\Delta t} + \frac{\U^{k+1} - \U^k}{\Delta \tau} +\R\left(\U^{n+1}\right) = 0.
+\]
+As $k \rightarrow \infty$, we want to drive $\U^{k + 1} \rightarrow \U^{n + 1}$,
+\begin{eqnarray}
+\frac{3\U^{k+1} - 4\U^n + \U^{n-1}}{2\Delta t} + \frac{\U^{k+1} - \U^k}{\Delta \tau} +\R\left(\U^{k+1}\right) &=& 0 \nonumber \\
+\frac{3\U^{k+1} - 3\U^k + 3\U^k - 4\U^n + \U^{n-1}}{2\Delta t} + \frac{\U^{k+1} - \U^k}{\Delta \tau} +\R\left(\U^{k+1}\right) &=& 0 \nonumber \\
+\left(\frac{3}{2\Delta t} + \frac{1}{\Delta \tau}\right) \Delta^k\U + \frac{3\U^k - 4\U^n + \U^{n-1}}{2\Delta t} +\R\left(\U^{k+1}\right) &=& 0 \nonumber \\
+\left(\frac{3}{2\Delta t} + \frac{1}{\Delta \tau}\right) \Delta^k\U + \frac{\partial\R}{\partial\U}\left(\U^k\right) \Delta^k\U &=& -\R\left(\U^k\right) - \frac{3\U^k - 4\U^n + \U^{n-1}}{2\Delta t}
+\end{eqnarray}
+where $\Delta^k\U = \U^{k+1} - \U^k$.
+
+\subsubsection{Newton's Method}
+
+In order to pose Eq.~\ref{Eq:FirstOrderBackwardEuler} in a form suitable for Neton's method, we define the left hand side as the new residual denoted by $\R^*$ and replace $\U^{n+1}$ with $\U$.
+\begin{equation}
+\R^*\left(\U\right) =
+\frac{\U - \U^n}{\Delta t} + \R\left(\U\right) = 0
+\label{Eq:FirstOrderBackwardEulerResidual}
+\end{equation}
+The Newton's method will be employed to iteratively solve for $\U$ which drives the residual defined by Eq.~\ref{Eq:FirstOrderBackwardEulerResidual} to zero, or
+\begin{equation}
+\left(\frac{\partial \R^*}{\partial\U}\right)^k
+\Delta \U^k
+=
+-\R^*\left(\U^k\right).
+\end{equation}
+
+Similarly second-order backward discretization of the time derivative term yields
+\begin{equation}
+\frac{3\U^{n+1} - 4\U^n + \U^{n - 1}}{2\Delta t} + \R\left(\U^{n+1}\right) = 0
+\end{equation}
+for which the corresponding modified residual is given by
+\begin{equation}
+\R^*\left(\U\right) =
+\frac{3\U - 4\U^n + \U^{n - 1}}{2\Delta t} + \R\left(\U\right) = 0 .
+\end{equation}
+
+\subsection{LUSGS-Newton}
+
+\begin{equation}
+\R\left(\U\right)
+=
+\sum_{j \in N_{i}} \HH_{ij} \cdot \Sn_{ij}
+=
+\sum_{j \in N^-_{i}} \HH_{ij} \cdot \Sn_{ij}
++
+\sum_{j \in N^+_{i}} \HH_{ij} \cdot \Sn_{ij}
+\end{equation}
+In practice we do not evaluate the numerical flux dyad $\HH$ and the surface normal $\Sn$ separately, rather evaluate the term at once. Thus we define its shorthand as
+\[
+\tilde{\HH}_{ij} \equiv \HH_{ij} \cdot \Sn_{ij}
+\]
+
+\begin{equation}
+\R\left(\U\right)
+=
+\sum_{j \in N_{i}} \tilde{\HH}_{ij}
+=
+\sum_{j \in N^-_{i}} \tilde{\HH}_{ij}
++
+\sum_{j \in N^+_{i}} \tilde{\HH}_{ij}
+\end{equation}
+
+\begin{eqnarray}
+\frac{\partial\R}{\partial\U} \Delta\U
+&=&
+\left(
+\sum_{j \in N^-_{i}} \frac{\partial\tilde{\HH}_{ij}}{\partial\U}
++
+\sum_{j \in N^+_{i}} \frac{\partial\tilde{\HH}_{ij}}{\partial\U}
+\right)
+\Delta\U
+\end{eqnarray}
+
+\[
+\frac{\partial\tilde{\HH}_{ij}}{\partial\U}
+=
+\frac{\partial\tilde{\HH}_{ij}}{\partial\U_i}
++
+\frac{\partial\tilde{\HH}_{ij}}{\partial\U_j}
+\]
+
+\[
+\tilde{\HH}_{ij}
+=
+\frac{1}{2}\left(\HH_i + \HH_j\right) \cdot \Sn_{ij}
+-
+\frac{1}{2} \tilde{\lambda}_{ij} \left(\U_j - \U_i\right)
+\]
+
+\begin{eqnarray*}
+\frac{\partial\R}{\partial\U} \Delta\U
+&=&
+\left(
+\sum_{j \in N_i}
+\frac{\partial\tilde{\HH}_{ij}}{\partial\U}
+\right) \Delta\U
+\\
+&=&
+\left[
+\sum_{j \in N_i}
+\left(
+\frac{\partial\tilde{\HH}_{ij}}{\partial\U_i}
++
+\frac{\partial\tilde{\HH}_{ij}}{\partial\U_j}
+\right)
+\right] \Delta\U
+\\
+&=&
+\sum_{j \in N_i}
+\left(
+\frac{1}{2}\frac{\partial\HH_i}{\partial\U_i} \cdot \Sn_{ij} \Delta\U_i
++
+\frac{1}{2}\frac{\partial\HH_j}{\partial\U_j} \cdot \Sn_{ij} \Delta\U_j
++
+\frac{1}{2}\tilde{\lambda}_{ij} \Delta\U_i
+-
+\frac{1}{2}\tilde{\lambda}_{ij} \Delta\U_j
+\right)
+\end{eqnarray*}
+
+\subsection{Matrix-free Method}
+\begin{equation}
+\left(\frac{\partial R^*}{\partial\U}\right)^k \w
+\approx
+\frac{R^*\left(\U^k + \epsilon\w\right) - R^*\left(\U^k\right)}{\epsilon}
+\end{equation}
+\begin{equation}
+\end{equation}
+
+\section{Newton-Krylov Scheme}
+
+Given a generic residual
+\[
+\mathbf{R}(\mathbf{U}) = \mathbf{R}_F(\mathbf{U}) + \mathbf{Q}(\mathbf{U})
+\]
+where $\mathbf{R}_F$ is the residual due to inviscid and viscous fluxes and $\mathbf{Q}$ is the source term.
+
+We seek a solution to the equation
+\[
+\mathbf{R}(\mathbf{U}) = 0
+\]
+by using Newton iteration
+\begin{equation}
+\left(\frac{\partial\mathbf{R}(\mathbf{U})}{\partial\mathbf{U}}\right)^n \Delta\mathbf{U}
+=
+-\mathbf{R}(\mathbf{U}^n)
+\label{Eq:NewtonFormula}
+\end{equation}
+
+The Generalized Minimum Residual (GMRES) Method iteratively solves an equation of the form
+\[
+A\mathbf{x} = \mathbf{b}
+\]
+by seeking a solution in the Krylov subspace
+\[
+K_n = span\{ \mathbf{b}, A\mathbf{b}, A\mathbf{b}^2, A\mathbf{b}^3, \ldots, A\mathbf{b}^n \}
+\]
+
+Referring to Eq.~\ref{Eq:NewtonFormula}, wee see that
+\[
+A \equiv \left(\frac{\partial\mathbf{R}(\mathbf{U})}{\partial\mathbf{U}}\right)^n
+\]
+The Krylov subspace is constructed by successively evaluating the following matrix-vector product
+\[
+A\mathbf{v} = 
+\left(\frac{\partial\mathbf{R}(\mathbf{U})}{\partial\mathbf{U}}\right)^n \mathbf{v}
+\]
+which can be further simplified by the following approximation
+\[
+\left(\frac{\partial\mathbf{R}(\mathbf{U})}{\partial\mathbf{U}}\right)^n \mathbf{v}
+\approx
+\frac{
+\mathbf{R}(\mathbf{U}^n + \epsilon v) - \mathbf{R}(\mathbf{U}^n)
+}
+{
+\epsilon
+}
+\]
+
+\section{Miscellany}
+
+\end{document}
+

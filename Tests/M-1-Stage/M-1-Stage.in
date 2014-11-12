@@ -1,0 +1,149 @@
+MeshFileName = "M-1-Stage.renamed.cgns"
+MeshScale = 1.0
+
+Execution = {"Type":"Parallel", "Distribution":"Simple"}
+#Execution = {"Type":"Sequential", "Distribution":"Simple"}
+#Execution = {"Type":"Parallel", "Distribution":"Custom", "ZoneGroups":[[1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [11, 12, 13, 14, 15], [16, 17, 18, 19, 20, 21]]}
+Execution = {"Type":"Parallel", "Distribution":"Automatic"}
+
+# Reference
+import math
+P0 = 24.0 * 9.8 * 100.0 * 100.0 # from kgf/cm^2 to Pascal
+T0 = 273.0
+RGAS = 297.0
+Rho0 = P0 / RGAS / T0
+gamma = 1.4
+C0 = math.sqrt(gamma * RGAS * T0)
+RhoEt0 = P0 / (gamma - 1.0)
+
+Reference = [ gamma, Rho0, T0, RGAS ]
+
+# Turbine passage quantities
+M1 = 0.3
+T1 = T0 / (1.0 + 0.5 * (gamma - 1.0) * M1 * M1)
+P1 = P0 * math.pow(T1 / T0, gamma / (gamma - 1.0))
+Rho1 = P1 / (RGAS * T1)
+C1 = math.sqrt(gamma * RGAS * T1)
+V1 = M1 * C1
+RhoEt1 = P1 / (gamma - 1.0) + 0.5 * Rho1 * V1 * V1
+
+P2 = 0.8 * P0
+P3 = 0.5 * P0
+
+I = 0.05
+ViscRatio = 10.0
+
+NoTurb = ["NoTurbulence"]
+Turb_Turb = ["IntensityViscosityRatio", I, ViscRatio, Rho0, C0, T0]
+
+U0 = [Rho1, 0.0, 0.0, Rho1 * V1, RhoEt1]
+
+FLUX_ORDER = 1
+FLUX_LIMITER = "None"
+
+"""
+"""
+Turb = NoTurb
+Initialization = {
+	"Flow":{"Type":"ISENTROPICEXPANSION", "TotalPressure":P0, "TotalTemperature":T0,
+		"StaticPressureSpecs":[
+			["Inlet_001", P1], ["Interface_001", P2], ["Outlet_001", P3]
+		], "Direction":"Z"},
+	"Turbulence":{"Type":"UNIFORM", "Data":Turb}
+	}
+CFL = {"CFL0":1.0, "CFLMAX":5.0, "SER":0.5, "StartSERAt":5, "LocalTimeStepping":True}
+Iterations = {"MaxIterations":100, "TurbulenceStartsAt":-1}
+R1_RPM = -10080.0 * 1.0
+
+"""
+Turb = NoTurb
+Initialization = {
+	"Flow":{"Type":"READFROMFILE", "FileName":"1.cgns"},
+	"Turbulence":{"Type":"READFROMFILE", "FileName":"1.cgns"}
+	}
+CFL = {"CFL0":1.0, "CFLMAX":10.0, "SER":0.5, "StartSERAt":5, "LocalTimeStepping":True}
+Iterations = {"MaxIterations":200, "TurbulenceStartsAt":-1}
+P3 = 0.2 * P0
+R1_RPM = -10080.0 * 1.0
+
+Turb = NoTurb
+Initialization = {
+	"Flow":{"Type":"READFROMFILE", "FileName":"2.cgns"},
+	"Turbulence":{"Type":"READFROMFILE", "FileName":"2.cgns"}
+	}
+CFL = {"CFL0":2.0, "CFLMAX":10.0, "SER":0.8, "StartSERAt":5, "LocalTimeStepping":True}
+Iterations = {"MaxIterations":10000, "TurbulenceStartsAt":-1}
+P3 = 0.2 * P0
+R1_RPM = -10080.0 * 1.0
+
+Turb = Turb_Turb
+Initialization = {
+	"Flow":{"Type":"READFROMFILE", "FileName":"3.cgns"},
+	"Turbulence":{"Type":"UNIFORM", "Data":Turb}
+	}
+CFL = {"CFL0":2.0, "CFLMAX":10.0, "SER":0.5, "StartSERAt":5, "LocalTimeStepping":True}
+Iterations = {"MaxIterations":10000, "TurbulenceStartsAt":0}
+P3 = 0.2 * P0
+R1_RPM = -10080.0 * 1.0
+
+FLUX_ORDER = 2
+FLUX_LIMITER = "MinMod"
+
+Turb = Turb_Turb
+Initialization = {
+	"Flow":{"Type":"READFROMFILE", "FileName":"3.cgns"},
+	"Turbulence":{"Type":"READFROMFILE", "FileName":"3.cgns"}
+	}
+CFL = {"CFL0":10.0, "CFLMAX":10.0, "SER":0.5, "LocalTimeStepping":False} # works
+CFL = {"CFL0":15.0, "CFLMAX":15.0, "SER":0.5, "LocalTimeStepping":False} # works a bit noisy convergence?
+CFL = {"CFL0":20.0, "CFLMAX":20.0, "SER":0.5, "LocalTimeStepping":False}
+Iterations = {"MaxIterations":10000, "TurbulenceStartsAt":0}
+P3 = 0.2 * P0
+R1_RPM = -10080.0 * 1.0
+"""
+
+BCs = [
+	{
+	"Patches":[ "Inlet_*" ],
+	"Type":"InletTotal",
+	"Data":[P0, T0, 0.0, 0.0, 1.0, Turb]
+	},
+	{
+	"Patches":[ "Outlet_*" ],
+	"Type":"OutletStaticPressure",
+	"Data":[P3]
+	},
+	{
+	"Patches":[ "Hub_*" ],
+	"Type":"InviscidWall",
+	},
+	{
+	"Patches":[ "Shroud_*" ],
+	"Type":"InviscidWall",
+	},
+	{
+	"Patches":[ "Blade_*" ],
+	"Type":"ViscousWall",
+	},
+]
+
+ZoneAttributes = [
+	{
+	"Zones":[ "Nozzle_*", "domain1", "domain3" ],
+	"Periodicity":{"Type":"ROTATIONAL", "Data":[0.0, 0.0, 2.0 * math.pi / float(44)]}
+	},
+	{
+	"Zones":[ "Rotor1_*", "domain10", "domain15", "domain16", "domain17", "domain18", "domain19", "domain20", "domain21", "domain8" ],
+	"RigidBodyMotion":{"Type":"ROTATIONAL", "Data":[0.0, 0.0, R1_RPM * 2.0 * math.pi / 60.0], "InitialOffset":[0.0, 0.0, 0.0]},
+	"Periodicity":{"Type":"ROTATIONAL", "Data":[0.0, 0.0, 2.0 * math.pi / float(88 / 2)]}
+	},
+]
+
+Interfaces = [
+	["N-R1", ["Interface_001"], ["Interface_002", "Interface_003"]]
+]
+
+Solver = {"Type":"LUSGS"}
+Flux = {"Type":"Roe", "Order":FLUX_ORDER, "Limiter":FLUX_LIMITER}
+TimeAdvancement = {"Type":"Steady"}
+

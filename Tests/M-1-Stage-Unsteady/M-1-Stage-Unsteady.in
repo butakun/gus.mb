@@ -1,0 +1,92 @@
+MeshFileName = "M-1-Stage.renamed.cgns"
+MeshScale = 1.0
+
+Execution = {"Type":"Parallel", "Distribution":"Simple"}
+#Execution = {"Type":"Sequential", "Distribution":"Simple"}
+
+import math
+P0 = 24.0 * 9.8 * 100.0 * 100.0 # from kgf/cm^2 to Pascal
+T0 = 273.0
+RGAS = 297.0
+Rho0 = P0 / RGAS / T0
+gamma = 1.4
+C0 = math.sqrt(gamma * RGAS * T0)
+RhoEt0 = P0 / (gamma - 1.0)
+
+M1 = 0.3
+T1 = T0 / (1.0 + 0.5 * (gamma - 1.0) * M1 * M1)
+P1 = P0 * math.pow(T1 / T0, gamma / (gamma - 1.0))
+Rho1 = P1 / (RGAS * T1)
+C1 = math.sqrt(gamma * RGAS * T1)
+V1 = M1 * C1
+RhoEt1 = P1 / (gamma - 1.0) + 0.5 * Rho1 * V1 * V1
+
+P2 = 0.8 * P0
+P3 = 0.8 * P0
+
+U0 = [Rho1, 0.0, 0.0, Rho1 * V1, RhoEt1, 0.0, 0.0]
+
+#FLUX_ORDER = 1
+#FLUX_LIMITER = "None"
+#Initialization = {"Type":"READFROMFILE", "FileName":"12.cgns"}
+
+FLUX_ORDER = 2
+FLUX_LIMITER = "MinMod"
+Initialization = {"Type":"READFROMFILE", "FileName":"13.cgns"}
+
+CFL = {"CFL0":5.0, "CFLMAX":10.0, "SER":0.5, "LocalTimeStepping":True}
+Iterations = {"MaxIterations":500, "TurbulenceStartsAt":0, "Subiterations":20}
+P3 = 0.2 * P0
+R1_RPM = -10080.0
+R1_omega = R1_RPM * math.pi / 60.0 # rad/sec
+R1_Blades = 88
+Nozzle_Blades = R1_Blades / 2
+R1_pitch_divisions = 50
+
+BCs = [
+	{
+	"Patches":[ "Inlet_*" ],
+	"Type":"InletTotal",
+	"Data":[P0, T0, 0.0, 0.0, 1.0]
+	},
+	{
+	"Patches":[ "Outlet_*" ],
+	"Type":"OutletStaticPressure",
+	"Data":[P3]
+	},
+	{
+	"Patches":[ "Hub_*" ],
+	"Type":"InviscidWall",
+	},
+	{
+	"Patches":[ "Shroud_*" ],
+	"Type":"InviscidWall",
+	},
+	{
+	"Patches":[ "Blade_*" ],
+	"Type":"ViscousWall",
+	},
+]
+
+ZoneAttributes = [
+	{
+	"Zones":[ "Nozzle_*", "domain1", "domain3" ],
+	"Periodicity":{"Type":"ROTATIONAL", "Data":[0.0, 0.0, 2.0 * math.pi / float(Nozzle_Blades)]}
+	},
+	{
+	"Zones":[ "Rotor1_*", "domain10", "domain15", "domain16", "domain17", "domain18", "domain19", "domain20", "domain21", "domain8" ],
+	"RigidBodyMotion":{"Type":"ROTATIONAL", "Data":[0.0, 0.0, R1_RPM * 2.0 * math.pi / 60.0]},
+	"Periodicity":{"Type":"ROTATIONAL", "Data":[0.0, 0.0, 2.0 * math.pi / float(R1_Blades / 2)]}
+	},
+]
+
+Interfaces = [
+	["N-R1", ["Interface_001"], ["Interface_002", "Interface_003"]]
+]
+
+Reference = [ gamma, Rho0, T0, RGAS ]
+
+Solver = {"Type":"LUSGS"}
+Flux = {"Type":"Roe", "Order":FLUX_ORDER, "Limiter":FLUX_LIMITER}
+TimeAdvancement = {"Type":"Unsteady", "DeltaTime":math.pi / R1_Blades / R1_pitch_divisions / abs(R1_omega), "Time0":0.0}
+

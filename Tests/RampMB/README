@@ -1,0 +1,12 @@
+1)
+
+gridgen -b RampMB.glf
+
+(this generates RampMB.cgns)
+
+2)
+
+../../IO/P ../../IO/GenerateBCs.py ./RampMB.in > RampMB.config
+
+3)
+

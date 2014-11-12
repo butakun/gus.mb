@@ -1,0 +1,42 @@
+GEOMETRY TURBO
+VERSION		 5.3
+TOLERANCE	 1e-006
+UNITS Meters
+NI_BEGIN CHANNEL 
+ NI_BEGIN basic_curve
+  NAME		 hub
+  DISCRETISATION 10
+  DATA_REDUCTION 0
+  NI_BEGIN zrcurve
+   ZR
+$HUB_CURVE
+  NI_END zrcurve
+ NI_END   basic_curve
+ NI_BEGIN basic_curve
+  NAME		 shroud
+  DISCRETISATION 10
+  DATA_REDUCTION 0
+  NI_BEGIN zrcurve
+   ZR
+$SHROUD_CURVE
+  NI_END zrcurve
+ NI_END   basic_curve
+ NI_BEGIN channel_curve hub    
+  NAME		 hub
+  VERTEX	 CURVE_P hub 0
+  VERTEX	 CURVE_P hub 1
+ NI_END   channel_curve hub    
+ NI_BEGIN channel_curve shroud 
+  NAME		 shroud
+  VERTEX	 CURVE_P shroud 0
+  VERTEX	 CURVE_P shroud 1
+ NI_END   channel_curve shroud 
+ NI_BEGIN channel_curve nozzle 
+  NAME		 nozzle
+ NI_END   channel_curve nozzle 
+NI_END   CHANNEL 
+$ROW_SPECS
+NI_END GEOMTURBO
+
+NI_BEGIN GEOMETRY
+NI_END   GEOMETRY

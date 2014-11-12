@@ -1,0 +1,192 @@
+// $Id: BlockPatch.cpp 254 2012-10-07 17:51:59Z kato $
+
+#include "Roster.h"
+#include "BlockPatch.h"
+#include "IndexUtils.h"
+#include <cassert>
+
+BlockPatch
+BlockPatch::New(int blockID, const IndexRange& meshRange, int uniqueID)
+{
+    BlockPatch bp(blockID, meshRange, uniqueID);
+    BlockPatch bp2 = Roster::GetInstance()->RegisterBlockPatch(bp);
+    return bp2;
+}
+
+void
+BlockPatch::InitOrientation()
+{
+    assert(mMeshRange.IsCanonical());
+    IndexRange bmr = Roster::GetInstance()->GetBlock(mBlockID)->MeshRange();
+    mDir = IndexUtils::PatchDirection(bmr, mMeshRange);
+
+    switch (mDir)
+    {
+    case I:
+        mI1 = IndexIJK(0, 1, 0);
+        mI2 = IndexIJK(0, 0, 1);
+        mI3Ghost    = IndexIJK(0, 0, 0);
+        mI3Interior = IndexIJK(1, 0, 0);
+        mDI3Ghost = IndexIJK(-1, 0, 0);
+        break;
+    case INEG:
+        mI1 = IndexIJK(0, 1, 0);
+        mI2 = IndexIJK(0, 0, 1);
+        mI3Ghost    = IndexIJK(1, 0, 0);
+        mI3Interior = IndexIJK(0, 0, 0);
+        mDI3Ghost = IndexIJK(1, 0, 0);
+        break;
+    case J:
+        mI1 = IndexIJK(1, 0, 0);
+        mI2 = IndexIJK(0, 0, 1);
+        mI3Ghost    = IndexIJK(0, 0, 0);
+        mI3Interior = IndexIJK(0, 1, 0);
+        mDI3Ghost = IndexIJK(0, -1, 0);
+        break;
+    case JNEG:
+        mI1 = IndexIJK(1, 0, 0);
+        mI2 = IndexIJK(0, 0, 1);
+        mI3Ghost    = IndexIJK(0, 1, 0);
+        mI3Interior = IndexIJK(0, 0, 0);
+        mDI3Ghost = IndexIJK(0, 1, 0);
+        break;
+    case K:
+        mI1 = IndexIJK(1, 0, 0);
+        mI2 = IndexIJK(0, 1, 0);
+        mI3Ghost    = IndexIJK(0, 0, 0);
+        mI3Interior = IndexIJK(0, 0, 1);
+        mDI3Ghost = IndexIJK(0, 0, -1);
+        break;
+    case KNEG:
+        mI1 = IndexIJK(1, 0, 0);
+        mI2 = IndexIJK(0, 1, 0);
+        mI3Ghost    = IndexIJK(0, 0, 1);
+        mI3Interior = IndexIJK(0, 0, 0);
+        mDI3Ghost = IndexIJK(0, 0, 1);
+        break;
+    default:
+        assert(false);
+    }
+}
+
+IndexRange
+BlockPatch::CellFaceRange() const
+{
+    IndexRange cfr = mMeshRange;
+    switch (mDir)
+    {
+    case I:
+    case INEG:
+        cfr.Start += IndexIJK(0, 1, 1);
+        break;
+    case J:
+    case JNEG:
+        cfr.Start += IndexIJK(1, 0, 1);
+        break;
+    case K:
+    case KNEG:
+        cfr.Start += IndexIJK(1, 1, 0);
+        break;
+    default:
+        assert(false);
+    }
+
+    return cfr;
+}
+
+void
+BlockPatch::GhostCellRange(IndexRange& gcr, IndexIJK& i1, IndexIJK& i2, IndexIJK& di3) const
+{
+    assert(mMeshRange.IsCanonical());
+    IndexRange bmr = Roster::GetInstance()->GetBlock(mBlockID)->MeshRange();
+    Direction dir = IndexUtils::PatchDirection(bmr, mMeshRange);
+
+    gcr = mMeshRange;
+    switch (dir)
+    {
+    case I:
+        gcr.Start += IndexIJK(0, 1, 1);
+        i1 = IndexIJK(0, 1, 0);
+        i2 = IndexIJK(0, 0, 1);
+        di3 = IndexIJK(-1, 0, 0);
+        break;
+    case INEG:
+        gcr.Start += IndexIJK(1, 1, 1);
+        gcr.End += IndexIJK(1, 0, 0);
+        i1 = IndexIJK(0, 1, 0);
+        i2 = IndexIJK(0, 0, 1);
+        di3 = IndexIJK(1, 0, 0);
+        break;
+    case J:
+        gcr.Start += IndexIJK(1, 0, 1);
+        i1 = IndexIJK(1, 0, 0);
+        i2 = IndexIJK(0, 0, 1);
+        di3 = IndexIJK(0, -1, 0);
+        break;
+    case JNEG:
+        gcr.Start += IndexIJK(1, 1, 1);
+        gcr.End += IndexIJK(0, 1, 0);
+        i1 = IndexIJK(1, 0, 0);
+        i2 = IndexIJK(0, 0, 1);
+        di3 = IndexIJK(0, 1, 0);
+        break;
+    case K:
+        gcr.Start += IndexIJK(1, 1, 0);
+        i1 = IndexIJK(1, 0, 0);
+        i2 = IndexIJK(0, 1, 0);
+        di3 = IndexIJK(0, 0, -1);
+        break;
+    case KNEG:
+        gcr.Start += IndexIJK(1, 1, 1);
+        gcr.End += IndexIJK(0, 0, 1);
+        i1 = IndexIJK(1, 0, 0);
+        i2 = IndexIJK(0, 1, 0);
+        di3 = IndexIJK(0, 0, 1);
+        break;
+    default:
+        assert(false);
+    }
+}
+
+IndexRange
+BlockPatch::MeshRangeToCellRange(const IndexRange& mr) const
+{
+    assert(mr.IsCanonical());
+
+    IndexRange cr = mr;
+    IndexIJK ms = mr.Shape();
+
+    IndexIJK d(0, 0, 0);
+    IndexIJK ds(0, 0, 0);
+
+    // FIXME: should use IndexUtils::PatchDirection (so it won't depend on Start.I being zero, etc.)
+    if (ms.I == 1)
+    {
+        ds = IndexIJK(0, 1, 1);
+        if (mr.Start.I == 0)
+            d.I = 1;
+    }
+    else if (ms.J == 1)
+    {
+        ds = IndexIJK(1, 0, 1);
+        if (mr.Start.J == 0)
+            d.J = 1;
+    }
+    else if (ms.K == 1)
+    {
+        ds = IndexIJK(1, 1, 0);
+        if (mr.Start.K == 0)
+            d.K = 1;
+    }
+    else
+    {
+        assert(false);
+    }
+
+    cr.Start += d;
+    cr.End += d;
+    cr.Start += ds;
+
+    return cr;
+}
+

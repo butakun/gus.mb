@@ -1,0 +1,42 @@
+NI_BEGIN nirow
+  NAME			$ROW_NAME
+  TYPE			normal
+  PERIODICITY	$PERIODICITY
+NI_BEGIN NINonAxiSurfaces hub
+  NAME			non axisymmetric hub
+  REPETITION			0
+NI_END   NINonAxiSurfaces hub
+NI_BEGIN NINonAxiSurfaces shroud
+  NAME			non axisymmetric shroud
+  REPETITION			0
+NI_END   NINonAxiSurfaces shroud
+NI_BEGIN NIBlade
+  NAME			Main Blade
+NI_BEGIN NITipGap
+NI_BEGIN NINonAxiSurfaces hub
+  NAME			non axisymmetric hub
+  REPETITION			0
+NI_END   NINonAxiSurfaces hub
+NI_END   NITipGap
+NI_BEGIN nibladegeometry
+	TYPE	GEOMTURBO
+	GEOMETRY_MODIFIED	0
+GEOMETRY TURBO VERSION 5
+blade_expansion_factor_hub		0.02
+blade_expansion_factor_shroud		0.02
+intersection_npts    10
+intersection_control 0
+data_reduction                        0
+data_reduction_spacing_tolerance      1e-006
+data_reduction_angle_tolerance        90
+control_points_distribution           0 9 105 9 70 0.000172940754631076 0.00144929645711145 
+units		                        1
+number_of_blades	$PERIODICITY
+suction
+$SUCTION_SECTIONS
+pressure
+$PRESSURE_SECTIONS
+NI_END   nibladegeometry
+  SOLID_BODY_CONFIGURATION	0
+NI_END   NIBlade
+NI_END   nirow

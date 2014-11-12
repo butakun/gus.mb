@@ -1,0 +1,80 @@
+MeshFileName = "DCA.periodic.cgns"
+MeshScale = 1.0
+
+Execution = {"Type":"Sequential", "Distribution":"Simple"}
+
+import math
+Rho0 = 1.225
+T0 = 300.0
+RGAS = 287.053
+gamma = 1.4
+C0 = math.sqrt(gamma * RGAS * T0)
+P0 = Rho0 * RGAS * T0
+RhoEt0 = P0 / (gamma - 1.0)
+
+M1 = 0.4
+T1 = T0 / (1.0 + 0.5 * (gamma - 1.0) * M1 * M1)
+P1 = P0 * math.pow(T1 / T0, gamma / (gamma - 1.0))
+Rho1 = P1 / (RGAS * T1)
+C1 = math.sqrt(gamma * RGAS * T1)
+V1 = M1 * C1
+RhoEt1 = P1 / (gamma - 1.0) + 0.5 * Rho1 * V1 * V1
+
+P2 = 0.5 * P0
+
+U0 = [Rho1, Rho1 * V1, 0.0, 0.0, RhoEt1, 0.0, 0.0]
+
+ZoneAttributes = []
+
+BCs = [
+	{
+	"Patches":[
+		"Wall", "Wall2"
+		],
+	"Type":"ViscousWall"
+	},
+
+	{
+	"Patches":[
+		"Inflow",
+		],
+	"Type":"InletTotal",
+	"Data":[P0, T0, 1.0, 0.0, 0.0, ["NoTurbulence"]]
+	},
+
+	{
+	"Patches":[
+		"Outflow",
+		],
+	"Type":"OutletStaticPressure",
+	"Data":[P2]
+	},
+
+	{
+	"Patches":[
+		"Hub", "Hub2", "Hub3"
+		],
+	"Type":"Symmetry",
+	},
+
+	{
+	"Patches":[
+		"Shroud", "Shroud2", "Shroud3"
+		],
+	"Type":"Symmetry",
+	},
+]
+
+Reference = [ gamma, Rho0, T0, RGAS ]
+
+Solver = {"Type":"LUSGS"}
+Flux = {"Type":"Roe", "Order":1, "Limiter":"None"}
+TimeAdvancement = {"Type":"Steady"}
+
+Initialization = {"Flow":{"Type":"UNIFORM", "Data":U0[:5]}, "Turbulence":{"Type":"UNIFORM", "Data":["NoTurbulence"]}}
+Iterations = {"MaxIterations":2000, "TurbulenceStartsAt":-1}
+CFL = {"CFL0":10.0, "CFLMAX":2000.0, "SER":1.8, "LocalTimeStepping":True}
+#Initialization = {"Type":"READFROMFILE", "FileName":"1.cgns"}
+#Iterations = {"MaxIterations":5000, "TurbulenceStartsAt":-1}
+#CFL = {"CFL0":2000.0, "CFLMAX":2000.0, "SER":1.8}
+

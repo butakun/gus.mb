@@ -1,0 +1,62 @@
+MeshFileName = "Blunt.cgns"
+MeshScale = 1.0
+
+import math
+Rho0 = 1.225
+T0 = 300.0
+RGAS = 287.053
+gamma = 1.4
+P0 = Rho0 * RGAS * T0
+C0 = math.sqrt(gamma * RGAS * T0)
+
+M1 = 0.4
+T0T1 = 1.0 + 0.5 * (gamma - 1.0) * M1 * M1
+P0P1 = math.pow(T0T1, gamma / (gamma - 1.0))
+P1 = P0 / P0P1
+T1 = T0 / T0T1
+Rho1 = P1 / (RGAS * T1)
+C1 = math.sqrt(gamma * RGAS * T1)
+V1 = M1 * C1
+
+RhoEt1 = P1 / (gamma - 1.0) + 0.5 * Rho1 * V1 * V1
+
+U0 = [Rho1, V1, 0.0, 0.0, RhoEt1, 0.0, 0.0]
+
+BCs = [
+	{
+	"Patches":[
+		"Wall", "Wall2", "Wall3"
+		],
+	"Type":"ViscousWall"
+	},
+
+	{
+	"Patches":[
+		"Inflow",
+		],
+	"Type":"Fix",
+	"Data":U0
+	},
+
+	{
+	"Patches":[
+		"Outflow",
+		],
+	"Type":"Extrapolate",
+	},
+
+	{
+	"Patches":[
+		"Symmetry", "Symmetry2"
+		],
+	"Type":"Symmetry",
+	},
+]
+
+Reference = [ gamma, Rho0, T0 ]
+Initialization = U0[:5]
+
+Solver = {"Type":"LUSGS"}
+CFL = {"CFL0":5.0, "CFLMAX":50.0, "SER":1.5}
+Iterations = {"MaxIterations":1000, "TurbulenceStartsAt":-1}
+

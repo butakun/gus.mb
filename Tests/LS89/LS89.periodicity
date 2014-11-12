@@ -1,0 +1,7 @@
+CGNSFileName = "LS89.cgns"
+
+Patches1 = ["Periodic1", "Periodic12"]
+Patches2 = ["Periodic2", "Periodic22"]
+
+Transform1to2 = Translate([0.0, 60.0, 0.0])
+

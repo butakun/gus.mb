@@ -1,0 +1,47 @@
+MeshFileName = "RampMB.cgns"
+MeshScale = 1.0
+
+import math
+Rho0 = 1.225
+T0 = 300.0
+RGAS = 287.053
+gamma = 1.4
+M0 = 3.0
+C0 = math.sqrt(gamma * RGAS * T0)
+V0 = M0 * C0
+P0 = Rho0 * RGAS * T0
+RhoEt0 = P0 / (gamma - 1.0) + 0.5 * Rho0 * V0 * V0
+
+U0 = [Rho0, V0, 0.0, 0.0, RhoEt0, 0.0, 0.0]
+
+BCs = [
+	{
+	"Patches":[
+		"Wall", "Wall2", "Wall3", "Wall4", "Wall5", "Wall6", "Wall7", "Wall8", "Wall9", "Wall10"
+		],
+	"Type":"InviscidWall"
+	},
+
+	{
+	"Patches":[
+		"Inflow", "Inflow2",
+		],
+	"Type":"Fix",
+	"Data":U0
+	},
+
+	{
+	"Patches":[
+		"Outflow",
+		],
+	"Type":"Extrapolate",
+	},
+]
+
+Reference = [ gamma, Rho0, T0 ]
+Initialization = {"Type":"UNIFORM", "Data":U0[:5]}
+
+Solver = {"Type":"LUSGS"}
+CFL = {"CFL0":10.0, "CFLMAX":200.0, "SER":1.5}
+Iterations = {"MaxIterations":500, "TurbulenceStartsAt":-1}
+

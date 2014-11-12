@@ -1,0 +1,133 @@
+\section{Turbulence Models}
+
+\begin{eqnarray}
+\frac{D \rho k}{Dt}
+&=&
+\frac{\partial}{\partial x_j}
+\left[
+\left(
+\mu + \sigma_k \mu_T
+\right)
+\frac{\partial k}{\partial x_j}
+\right]
+-
+\beta_k \rho k \omega
++
+\tau_{ij}\frac{\partial u_i}{\partial x_j}
+\label{Eq:KTransport}
+\\
+\frac{D \rho \omega}{Dt}
+&=&
+\frac{\partial}{\partial x_j}
+\left[
+\left(
+\mu + \sigma_\omega \mu_T
+\right)
+\frac{\partial \omega}{\partial x_j}
+\right]
+-
+\beta_\omega \rho \omega^2
++
+\alpha_\omega
+\frac{\omega}{k}
+\tau_{ij}\frac{\partial u_i}{\partial x_j}
+\label{Eq:OmegaTransport}
+\end{eqnarray}
+
+\[
+k = \frac{u_i u_i}{2} = \frac{[L^2]}{[T^2]}
+\]
+
+\[
+\tau_{ij} = \rho u_i u_j = 2 \mu_T S_{ij} = \frac{[M]}{[L][T^2]}
+\]
+
+\[
+S_{ij} = \frac{\partial \tilde{u}_i}{\partial x_j} + \frac{\partial \tilde{u}_j}{\partial x_i} = [T^{-1}]
+\]
+
+\[
+\rho = \frac{[M]}{[L^3]}
+\]
+
+If we choose dissipation per unit turbulence kinetic energy, $\omega$, as the second parameter, which has the units
+\[
+\omega = [T^{-1}]
+\]
+then the turbulence viscosity coefficient can be expressed as
+\[
+\mu_T = \frac{[M]}{[L][T]}
+= \frac{\rho k}{\omega}
+.
+\]
+
+\subsection{Nondimensionalization}
+
+We employ the following nondimensionalization.
+%
+%\begin{eqnarray}
+%k^* &=& \frac{k}{c_\infty^2} \label{Eq:KNondim} \\
+%\omega^* &=& \frac{\omega L}{c_\infty} \label{Eq:OmegaNondim}
+%\end{eqnarray}
+%
+%Using Eqs.~\ref{Eq:KNondim} and \ref{Eq:OmegaNondim}, Eqs.~\ref{Eq:KTransport} and \ref{Eq:OmegaTransport} are nondimensionalized as
+%
+%\begin{equation}
+%\rho^* \frac{\partial k^*}{\partial t^*} + \rho^* U^*_j \frac{\partial k^*}{\partial x^*_j}
+%=
+%\frac{1}{Re} \tau^*_{ij} \frac{\partial U^*_i}{\partial x^*_j}
+%- \beta_k \rho^* k^* \omega^*
+%+ \frac{1}{Re} \frac{\partial}{\partial x^*_j} \left[
+%	\left( \mu^* + \sigma_k \mu_T^* \right) \frac{\partial k^*}{\partial x^*_j}
+%	\right]
+%\end{equation}
+%
+%\begin{equation}
+%\rho^* \frac{\partial \omega^*}{\partial t^*} + \rho^* U^*_j \frac{\partial \omega^*}{\partial x^*_j}
+%=
+%\frac{1}{Re} \frac{\alpha_\omega \omega^*}{k^*} \tau^*_{ij} \frac{\partial U^*_i}{\partial x^*_j}
+%- \beta_\omega \rho^* {\omega^*}^2
+%+ \frac{1}{Re} \frac{\partial}{\partial x^*_j} \left[
+%	\left( \mu^* + \sigma_\omega \mu_T^* \right) \frac{\partial \omega^*}{\partial x^*_j}
+%	\right]
+%\end{equation}
+%
+%Note that the above nondimensionalization convention is different from that used in various NASA codes such as CFL3D and OVERFLOW which is given below as reference.
+\begin{eqnarray}
+k^* &=& \frac{k}{c_\infty^2} \label{Eq:KNondim} \\
+\omega^* &=& \frac{\omega \mu_\infty}{\rho_\infty c_\infty^2} \label{Eq:OmegaNondim}
+\end{eqnarray}
+%
+from which we express the nondimensional turbulent viscosity, $\mu_T^*$, as follows.
+%
+\begin{equation}
+\mu_T^* = \frac{\mu_T}{\mu_\infty}
+	= \frac{\rho k}{\omega \mu_\infty}
+	= \frac{\rho^* \rho_\infty k^* c_\infty^2}{\omega^* \left(\frac{\rho_\infty c_\infty^2}{\mu_\infty}\right) \mu_\infty}
+	= \left(\frac{\rho_\infty c_\infty^2}{\rho_\infty c_\infty^2}\right) \frac{\rho^* k^*}{\omega^*}
+	= \frac{\rho^* k^*}{\omega^*}
+\end{equation}
+%
+%using the CFL3D convention, the $k$-$\omega$ turbulence model is written in nondimensional form as
+Using Eqs.~\ref{Eq:KNondim} and \ref{Eq:OmegaNondim}, Eqs.~\ref{Eq:KTransport} and \ref{Eq:OmegaTransport} are nondimensionalized as
+%
+\begin{equation}
+\rho^* \frac{\partial k^*}{\partial t^*} + \rho^* U^*_j \frac{\partial k^*}{\partial x^*_j}
+=
+\frac{1}{Re} \tau^*_{ij} \frac{\partial U^*_i}{\partial x^*_j}
+- Re \beta_k \rho^* k^* \omega^*
++ \frac{1}{Re} \frac{\partial}{\partial x^*_j} \left[
+	\left( \mu^* + \sigma_k \mu_T^* \right) \frac{\partial k^*}{\partial x^*_j}
+	\right]
+\end{equation}
+%
+\begin{equation}
+\rho^* \frac{\partial \omega^*}{\partial t^*} + \rho^* U^*_j \frac{\partial \omega^*}{\partial x^*_j}
+=
+\frac{1}{Re} \frac{\alpha_\omega \omega^*}{k^*} \tau^*_{ij} \frac{\partial U^*_i}{\partial x^*_j}
+- Re \beta_\omega \rho^* {\omega^*}^2
++ \frac{1}{Re} \frac{\partial}{\partial x^*_j} \left[
+	\left( \mu^* + \sigma_\omega \mu_T^* \right) \frac{\partial \omega^*}{\partial x^*_j}
+	\right]
+\end{equation}
+
