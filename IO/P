@@ -1,0 +1,13 @@
+#!/bin/sh
+
+D=`dirname $0`
+D=`readlink -f $D`
+
+if test -e $D/PythonEnvironment; then
+	source $D/PythonEnvironment
+else
+	PYTHON=python
+fi
+
+PYTHONPATH=$D $PYTHON $*
+

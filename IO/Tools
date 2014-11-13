@@ -1,0 +1,17 @@
+#!/bin/sh
+
+if test $# -lt 1
+then
+	echo "Usage: Tools DumpCGNS|ApplyIGGBCs|... ..."
+	exit 1
+fi
+
+D=`dirname $0`
+
+toolname=$1
+script=$toolname.py
+
+shift
+
+$D/P $D/$script $*
+

@@ -716,12 +716,12 @@ CGNSFuncs::NArrays()
 }
 
 void
-CGNSFuncs::ArrayInfo(int A, std::string& arrayName, std::string& dataType, int* dataDimension, int* dimensionVector)
+CGNSFuncs::ArrayInfo(int A, std::string& arrayName, std::string& dataType, int* dataDimension, CGNS::cgsize_t* dimensionVector)
 {
     int err;
     char arrayName_[CGNS_NAME_LENGTH];
     //CGNS::cgsize_t dimensionVector_;
-    CGNS::DataType_t dataType_;
+    CGNS::CG_DataType_t dataType_;
     err = CGNS::cg_array_info(A, arrayName_, &dataType_, dataDimension, dimensionVector);
     cgns_assert(err);
 

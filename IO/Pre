@@ -1,0 +1,8 @@
+#!/bin/sh
+
+D=`dirname $0`
+D=`readlink -f $D`
+
+PYTHON=python
+PYTHONPATH=$D $PYTHON $D/Pre.py $*
+

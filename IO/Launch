@@ -1,0 +1,65 @@
+#!/bin/sh
+
+MPIType() {
+	if test "x$OMPI_COMM_WORLD_RANK" != "x"; then
+		echo "OPENMPI"
+	elif test "x$PMI_RANK" != "x"; then
+		echo "INTELMPI"
+	else
+		echo "NOMPI"
+	fi
+}
+
+GetMyRank() {
+	mpitype=`MPIType`
+	if test $mpitype = "OPENMPI"; then
+		echo $OMPI_COMM_WORLD_RANK
+	elif test $mpitype = "INTELMPI"; then
+		echo $PMI_RANK
+	else
+		echo 0
+	fi
+}
+
+GetWorldSize() {
+	case `MPIType` in
+	OPENMPI)
+		echo $OMPI_COMM_WORLD_SIZE
+		;;
+	INTELMPI)
+		echo $PMI_SIZE
+		;;
+	*)
+		echo 1
+		;;
+	esac
+}
+
+D=`dirname $0`
+
+infile=$1
+stem=`echo $infile | sed 's/\.in$//'`
+configfile=$stem.config
+
+echo $D $infile $configfile
+
+commsize=`GetWorldSize`
+echo "World communicator size = $commsize"
+
+myrank=`GetMyRank`
+echo "My rank = $myrank"
+
+if test $myrank = 0; then
+
+	$D/P $D/GenerateBCs.py $infile $commsize > $configfile
+	if test ! $? = 0; then
+		exit $?
+	fi
+	$D/P $D/SolverSetup.py $infile
+	if test ! $? = 0; then
+		exit $?
+	fi
+fi
+
+LD_LIBRARY_PATH=$D:$LD_LIBRARY_PATH $D/Solver $configfile $2
+

@@ -66,7 +66,7 @@ void Where(std::vector<std::string>& labels, std::vector<int>& indices);
 void DeleteNode(char* nodeName);
 
 int NArrays();
-void ArrayInfo(int A, std::string& arrayName, std::string& dataType, int* dataDimension, int* dimensionVector);
+void ArrayInfo(int A, std::string& arrayName, std::string& dataType, int* dataDimension, CGNS::cgsize_t* dimensionVector);
 void ArrayReadInteger(int A, std::vector<int>& integerArrayData);
 void ArrayReadFloat(int A, std::vector<double>& floatArrayData);
 
