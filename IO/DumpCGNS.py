@@ -20,6 +20,7 @@ def Main(filename):
 		print "Zone: ", zone["Zone"]
 		print "Name: ", zone["Name"]
 		print "Size: ", zone["Size"]
+		print "Family: ", zone["FamilyName"]
 		print "Bocos:"
 		for boco in zone["Bocos"]:
 			print "  Name: \"%s\"" % boco["Name"]

@@ -59,6 +59,10 @@ class C1to1(object):
 	def __eq__(self, c):
 		return np.all(self.UniqueID == c.UniqueID)
 
+class Family(object):
+	def __init__(self, name):
+		self.FamilyName = name
+
 def CanonizeRange(r):
 	start = np.min([r[:3], r[3:]], 0)
 	end   = np.max([r[:3], r[3:]], 0)
@@ -126,6 +130,22 @@ def ExpandWildcards(pattern, candidates):
 	else:
 		return filter(lambda a: fnmatch.fnmatch(a, pattern), candidates)
 
+def ExpandPatchNames(names, cgnsfile):
+
+	matchedBocos = []
+	for name in names:
+		if isinstance(name, str):
+			matched = cgnsfile.MatchBocosByName(name)
+			if len(matched) > 0:
+				matchedBocos.extend(matched)
+		elif isinstance(name, Family):
+			matched = cgnsfile.MatchBocosByFamilyName(name.FamilyName)
+			if len(matched) > 0:
+				matchedBocos.extend(matched)
+		else:
+			assert(false)
+	return matchedBocos
+
 def Main(filename, commsize):
 
 	config = {}
@@ -134,9 +154,10 @@ def Main(filename, commsize):
 	ref = config["Reference"] # Gamma, RhoRef, TRef, RGAS
 
 	mesh = CGNSFile.CGNSFile(config["MeshFileName"])
+	zones = mesh.ReadZones()
+	families = mesh.ReadFamilies()
 
 	# zone attributes
-	zones = mesh.ReadZones()
 	zoneNames = [ zone["Name"] for zone in zones ]
 	B = 1
 
@@ -159,22 +180,26 @@ def Main(filename, commsize):
 				zone[key] = value
 
 	# extract boco patch names
-	bocos = zones.AllBocos()
+	bocos = mesh.AllBocos()
 	bocoNames = [ patch["Name"] for patch in bocos ]
 
 	BCs = config["BCs"]
 	for bc in BCs:
 		patchNames = bc["Patches"]
-		patchNamesAll = ExpandWildcards(patchNames, bocoNames)
-		assert(len(patchNamesAll) > 0)
+		#patchNamesAll = ExpandWildcards(patchNames, bocoNames)
+		#assert(len(patchNamesAll) > 0)
+		bocos = ExpandPatchNames(patchNames, mesh)
+		assert(len(bocos) > 0)
 		bcType = bc["Type"]
 		if bc.has_key("Data"):
 			bcData = bc["Data"]
 		else:
 			bcData = None
-		for patchName in patchNamesAll:
-			zone, boco = zones.FindBocoByName(patchName)
-			bocoInfo = [patchName, bcType, bcData]
+		#for patchName in patchNamesAll:
+		#	zone, boco = zones.FindBocoByName(patchName)
+		for boco in bocos:
+			zone = boco["Zone"]
+			bocoInfo = [boco, bcType, bcData]
 			if zone.has_key("BCs"):
 				zone["BCs"].append(bocoInfo)
 			else:
@@ -233,9 +258,9 @@ def Main(filename, commsize):
 		direction = initFlow["Direction"]
 		pSpecs = initFlow["StaticPressureSpecs"]
 		ppSpecs = [] # [pos, p]
-		for patchName, pres in pSpecs:
-			zone, patch = zones.FindBocoByName(patchName)
-			xyz = mesh.ReadPatchCoord(B, zone["Zone"], patch)
+		for zoneName, bocoName, pres in pSpecs:
+			zone, boco = mesh.FindZoneAndBocoByName(zoneName, bocoName)
+			xyz = mesh.ReadPatchCoord(B, zone["Zone"], boco)
 			xyzIndex = ["X", "Y", "Z"].index(direction)
 			pos = xyz[xyzIndex, 0, 0, 0] * config["MeshScale"]
 			ppSpecs.append([pos, pres])
@@ -320,7 +345,7 @@ def Main(filename, commsize):
 
 	for zone in zones:
 		print "# Zone"
-		print zone["Zone"]
+		print zone["Zone"], "\t", zone["Name"]
 		"""
 		print "# Rigid motion [Type(NONE|ROTATIONAL|TRANSLATIONAL], VecX, VecY, VecZ]"
 		rbm = zone["RigidBodyMotion"]
@@ -333,8 +358,8 @@ def Main(filename, commsize):
 		print "# BCs (name, type, spec)"
 		print len(bcs)
 		for bc in bcs:
-			bocoName, bocoType, bocoData = bc
-			z, boco = zones.FindBocoByName(bocoName)
+			boco, bocoType, bocoData = bc
+			bocoName = "%s/%s" % (boco["Zone"]["Name"], boco["Name"])
 			dataStr = "-1"
 			if bocoType == "InletTotal":
 				dataStr = "%f %f %f %f %f" % tuple(bocoData[0:5])

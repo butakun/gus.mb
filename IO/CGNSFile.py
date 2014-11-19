@@ -2,6 +2,7 @@
 
 import numpy as np
 import math as m
+import fnmatch
 import CGNS
 from PointRange import *
 
@@ -9,6 +10,8 @@ class Zones(list):
 
 	def AllBocos(self):
 
+		""" deprecated """
+		assert(false)
 		patches = []
 		for zone in self:
 			patches.extend(zone["Bocos"])
@@ -16,6 +19,8 @@ class Zones(list):
 
 	def FindBocoByName(self, name):
 
+		""" deprecated """
+		assert(false)
 		for zone in self:
 			match = filter(lambda b: b["Name"] == name, zone["Bocos"])
 			assert(len(match) <= 1)
@@ -95,6 +100,13 @@ class Zone(Node):
 			patches.extend(subpatches)
 		return patches
 
+	def FindBocoByName(self, name):
+
+		match = filter(lambda b: b["Name"] == name, self["Bocos"])
+		assert(len(match) <= 1)
+		if match:
+			return match[0]
+
 class Patch(Node):
 
 	def __init__(self, pathRoot, dic):
@@ -165,6 +177,9 @@ class CGNSFile(object):
 			name, size = CGNS.ZoneRead(self.fn, B, Z)
 			#zone = {"Zone":Z, "Name":name, "Size":size}
 			zone = Zone(base, Z, name, size)
+			CGNS.GoPath(self.fn, zone.Path)
+			famName = CGNS.FamNameRead()
+			zone["FamilyName"] = famName
 
 			nbocos = CGNS.NBocos(self.fn, B, Z)
 
@@ -189,6 +204,8 @@ class CGNSFile(object):
 				c1to1s.append(c1to1)
 			zone["1to1s"] = c1to1s
 			zones.append(zone)
+
+		self.Zones = zones
 
 		return zones
 
@@ -256,7 +273,36 @@ class CGNSFile(object):
 					family[userDataName] = None
 			families[familyName] = family
 
+		self.Families = families
+
 		return families
+
+	def AllBocos(self):
+
+		allBocos = []
+		for zone in self.Zones:
+			allBocos.extend(zone["Bocos"])
+		return allBocos
+
+	def MatchBocosByName(self, pattern):
+
+		matchedBocos = filter(lambda boco: fnmatch.fnmatch(boco["Name"], pattern), self.AllBocos())
+		return matchedBocos
+
+	def MatchBocosByFamilyName(self, familyName):
+
+		matchedBocos = filter(lambda boco: fnmatch.fnmatch(boco["FamilyName"], familyName), self.AllBocos())
+		return matchedBocos
+
+	def FindZoneByName(self, name):
+
+		return self.Zones.FindZoneByName(name)
+
+	def FindZoneAndBocoByName(self, zoneName, bocoName):
+
+		zone = self.FindZoneByName(zoneName)
+		boco = zone.FindBocoByName(bocoName)
+		return zone, boco
 
 def ComputeCellCenters(XYZ):
 
