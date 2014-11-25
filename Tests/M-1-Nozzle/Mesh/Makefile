@@ -6,6 +6,6 @@ all::	M-1-Nozzle.cgns
 M-1-Nozzle.cgns:	M-1-Nozzle.geomTurbo
 	$(AUTOGRID5) -print -batch -script ./AutoGrid5Script.py
 
-M-1-Nozzle-geomTurbo:
+M-1-Nozzle.geomTurbo:
 	$(PYTHON) ./MakeGeomTurbo.py > M-1-Nozzle.geomTurbo
 
