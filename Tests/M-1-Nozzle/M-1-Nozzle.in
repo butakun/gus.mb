@@ -1,7 +1,7 @@
-MeshFileName = "M-1-Nozzle.renamed.cgns"
+MeshFileName = "M-1-Nozzle.cgns"
 MeshScale = 1.0
 
-Execution = {"Type":"Parallel", "Distribution":"Simple"}
+Execution = {"Type":"Parallel", "Distribution":"Automatic"}
 #Execution = {"Type":"Sequential", "Distribution":"Simple"}
 
 import math
@@ -23,40 +23,59 @@ C1 = math.sqrt(gamma * RGAS * T1)
 V1 = M1 * C1
 RhoEt1 = P1 / (gamma - 1.0) + 0.5 * Rho1 * V1 * V1
 
+I = 0.05
+ViscRatio = 10.0
+
+NoTurb = ["NoTurbulence"]
+Turb_Turb = ["IntensityViscosityRatio", I, ViscRatio, Rho0, C0, T0]
+
 U0 = [Rho1, 0.0, 0.0, Rho1 * V1, RhoEt1, 0.0, 0.0]
 
 FluxOrder = 1
 Limiter = "None"
 
-P2 = 0.5 * P0
+"""
+Turb = NoTurb
 Initialization = {
 	"Flow":{
 	"Type":"ISENTROPICEXPANSION", "TotalPressure":P0, "TotalTemperature":T0,
-	"StaticPressureSpecs":[["Inlet_001", P1], ["Outlet_001", P2]], "Direction":"Z"
+	"StaticPressureSpecs":[["domain3", "bc_9", P1], ["domain1", "bc_6", P2]], "Direction":"Z"
 	},
 	"Turbulence":{
-	"Type":"UNIFORM", "Data":["NoTurbulence"]
+	"Type":"UNIFORM", "Data":Turb
 	}
 	}
-CFL = {"CFL0":1.0, "CFLMAX":20.0, "SER":1.0, "LocalTimeStepping":True}
+CFL = {"CFL0":1.0, "CFLMAX":20.0, "SER":1.0, "StartSERAt":10, "LocalTimeStepping":True}
 Iterations = {"MaxIterations":2000, "TurbulenceStartsAt":-1}
+P2 = 0.5 * P0
 BladeBC = "ViscousWall"
 
-"""
-#Initialization = {"Type":"READFROMFILE", "FileName":"1.cgns"}
-#CFL = {"CFL0":5.0, "CFLMAX":10.0, "SER":1.0, "LocalTimeStepping":True}
-#Iterations = {"MaxIterations":2000, "TurbulenceStartsAt":-1}
-#P2 = 0.2 * P0
-#BladeBC = "ViscousWall"
+Turb = NoTurb
+Initialization = {
+	"Flow":{ "Type":"READFROMFILE", "FileName":"1.cgns" },
+	"Turbulence":{ "Type":"READFROMFILE", "FileName":"1.cgns" }
+	}
+CFL = {"CFL0":2.0, "CFLMAX":10.0, "SER":1.0, "StartSERAt":5, "LocalTimeStepping":True}
+Iterations = {"MaxIterations":2000, "TurbulenceStartsAt":-1}
+P2 = 0.2 * P0
+BladeBC = "ViscousWall"
 
-#Initialization = {"Type":"READFROMFILE", "FileName":"2.cgns"}
-#CFL = {"CFL0":5.0, "CFLMAX":20.0, "SER":1.0, "LocalTimeStepping":True}
-#Iterations = {"MaxIterations":2000, "TurbulenceStartsAt":-1}
-#P2 = 0.1 * P0
-#BladeBC = "ViscousWall"
+Turb = NoTurb
+Initialization = {
+	"Flow":{ "Type":"READFROMFILE", "FileName":"2.cgns" },
+	"Turbulence":{ "Type":"READFROMFILE", "FileName":"2.cgns" }
+	}
+CFL = {"CFL0":2.0, "CFLMAX":10.0, "SER":1.0, "StartSERAt":5, "LocalTimeStepping":True}
+Iterations = {"MaxIterations":2000, "TurbulenceStartsAt":-1}
+P2 = 0.1 * P0
+BladeBC = "ViscousWall"
 
-Initialization = {"Type":"READFROMFILE", "FileName":"3.cgns"}
-CFL = {"CFL0":2.0, "CFLMAX":2.0, "SER":1.0, "LocalTimeStepping":True}
+Turb = NoTurb
+Initialization = {
+	"Flow":{ "Type":"READFROMFILE", "FileName":"3.cgns" },
+	"Turbulence":{ "Type":"READFROMFILE", "FileName":"3.cgns" }
+	}
+CFL = {"CFL0":2.0, "CFLMAX":10.0, "SER":1.0, "StartSERAt":5, "LocalTimeStepping":True}
 Iterations = {"MaxIterations":2000, "TurbulenceStartsAt":-1}
 P2 = 0.1 * P0
 BladeBC = "ViscousWall"
@@ -64,29 +83,38 @@ FluxOrder = 2
 Limiter = "MinMod"
 """
 
+Turb = Turb_Turb
+Initialization = {
+	"Flow":{ "Type":"READFROMFILE", "FileName":"4.cgns" },
+	"Turbulence":{ "Type":"UNIFORM", "Data":Turb }
+	}
+CFL = {"CFL0":2.0, "CFLMAX":10.0, "SER":1.0, "StartSERAt":5, "LocalTimeStepping":True}
+Iterations = {"MaxIterations":2000, "TurbulenceStartsAt":0}
+P2 = 0.1 * P0
+BladeBC = "ViscousWall"
+FluxOrder = 2
+Limiter = "MinMod"
+
 BCs = [
 	{
-	"Patches":[ "Inlet_*" ],
+	"Patches":[ Family("Nozzle_HUB"), Family("Nozzle_HUB_UPSTREAM_1"), Family("Nozzle_HUB_DOWNSTREAM_1"),
+		Family("Nozzle_SHROUD"), Family("Nozzle_SHROUD_UPSTREAM_1"), Family("Nozzle_SHROUD_DOWNSTREAM_1") ],
+	"Type":"InviscidWall",
+	},
+	{
+	"Patches":[ Family("Nozzle_INFLOW") ],
 	"Type":"InletTotal",
 	"Data":[P0, T0, 0.0, 0.0, 1.0, ["NoTurbulence"]]
 	},
 	{
-	"Patches":[ "Outlet_*" ],
+	"Patches":[ Family("Nozzle_OUTFLOW") ],
 	"Type":"OutletStaticPressure",
 	"Data":[P2]
 	},
 	{
-	"Patches":[ "Hub_*" ],
-	"Type":"InviscidWall",
-	},
-	{
-	"Patches":[ "Shroud_*" ],
-	"Type":"InviscidWall",
-	},
-	{
-	"Patches":[ "Blade_*" ],
-	"Type":BladeBC,
-	},
+	"Patches":[ Family("Nozzle_Main_Blade") ],
+	"Type":BladeBC
+	}
 ]
 
 ZoneAttributes = [
