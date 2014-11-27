@@ -294,6 +294,16 @@ class CGNSFile(object):
 		matchedBocos = filter(lambda boco: fnmatch.fnmatch(boco["FamilyName"], familyName), self.AllBocos())
 		return matchedBocos
 
+	def MatchZonesByName(self, pattern):
+
+		matchedZones = filter(lambda zone: fnmatch.fnmatch(zone["Name"], pattern), self.Zones)
+		return matchedZones
+
+	def MatchZonesByFamilyName(self, familyName):
+
+		matchedZones = filter(lambda zone: fnmatch.fnmatch(zone["FamilyName"], familyName), self.Zones)
+		return matchedZones
+
 	def FindZoneByName(self, name):
 
 		return self.Zones.FindZoneByName(name)

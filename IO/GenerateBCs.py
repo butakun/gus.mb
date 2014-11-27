@@ -146,6 +146,22 @@ def ExpandPatchNames(names, cgnsfile):
 			assert(false)
 	return matchedBocos
 
+def ExpandZones(names, cgnsfile):
+
+	matchedZones = []
+	for name in names:
+		if isinstance(name, str):
+			matched = cgnsfile.MatchZonesByName(name)
+			if len(matched) > 0:
+				matchedZones.extend(matched)
+		elif isinstance(name, Family):
+			matched = cgnsfile.MatchZonesByFamilyName(name.FamilyName)
+			if len(matched) > 0:
+				matchedZones.extend(matched)
+		else:
+			assert(false)
+	return matchedZones
+
 def Main(filename, commsize):
 
 	config = {}
@@ -163,10 +179,10 @@ def Main(filename, commsize):
 
 	ZoneAttrs = config["ZoneAttributes"]
 	for zoneAttr in ZoneAttrs:
-		zoneNamesAll = ExpandWildcards(zoneAttr["Zones"], zoneNames)
+		#zoneNamesAll = ExpandWildcards(zoneAttr["Zones"], zoneNames)
+		zonesAll = ExpandZones(zoneAttr["Zones"], mesh)
 		attrs = filter(lambda pair: pair[0] != "Zones", zoneAttr.items())
-		for zoneName in zoneNamesAll:
-			zone = zones.FindZoneByName(zoneName)
+		for zone in zonesAll:
 			#zone["RigidBodyMotion"] = zoneAttr["RigidBodyMotion"]
 			for key, value in attrs:
 				assert(key not in zone)
@@ -214,13 +230,16 @@ def Main(filename, commsize):
 	for intf in Interfaces:
 		name, patches1, patches2 = intf
 		for patchesSelf, patchesDonor in [[patches1, patches2], [patches2, patches1]]:
-			patchNamesSelf  = ExpandWildcards(patchesSelf, bocoNames)
-			patchNamesDonor = ExpandWildcards(patchesDonor, bocoNames)
-			for patchNameSelf in patchNamesSelf:
-				zone, boco = zones.FindBocoByName(patchNameSelf)
-				if not zone["Interfaces"].has_key(name):
-					zone["Interfaces"][name] = [[], patchNamesDonor]
-				zone["Interfaces"][name][0].append(patchNameSelf)
+			#patchNamesSelf  = ExpandWildcards(patchesSelf, bocoNames)
+			#patchNamesDonor = ExpandWildcards(patchesDonor, bocoNames)
+			bocosSelf  = ExpandPatchNames(patchesSelf, mesh)
+			bocosDonor = ExpandPatchNames(patchesDonor, mesh)
+			for boco in bocosSelf:
+				zone = boco["Zone"]
+				if zone["Interfaces"].has_key(name):
+					zone["Interfaces"][name][0].append(boco)
+				else:
+					zone["Interfaces"][name] = [[boco], bocosDonor]
 
 	Solver = config["Solver"]
 	TimeAdv = config["TimeAdvancement"]
@@ -399,13 +418,13 @@ def Main(filename, commsize):
 
 		print "# Interfaces"
 		print len(zone["Interfaces"])
-		for ifname, patches_donors in zone["Interfaces"].items():
-			patches, donors = patches_donors
+		for ifname, bocos_self_donor in zone["Interfaces"].items():
 			print "\"%s\"" % ifname
-			for names in [patches, donors]:
-				print len(names)
-				for name in names:
-					z, boco = zones.FindBocoByName(name)
+			#for names in [patches, donors]:
+			for bocos in bocos_self_donor:
+				print len(bocos)
+				for boco in bocos:
+					z = boco["Zone"]
 					print "\"%s\" %d %s" % (name, z["Zone"], RangeString(boco["Range"]))
 
 		print "# Flowfield Initialization"
