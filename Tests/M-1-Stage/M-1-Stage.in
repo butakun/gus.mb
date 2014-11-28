@@ -1,7 +1,6 @@
-MeshFileName = "M-1-Stage.renamed.cgns"
+MeshFileName = "M-1-Stage.cgns"
 MeshScale = 1.0
 
-Execution = {"Type":"Parallel", "Distribution":"Simple"}
 #Execution = {"Type":"Sequential", "Distribution":"Simple"}
 #Execution = {"Type":"Parallel", "Distribution":"Custom", "ZoneGroups":[[1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [11, 12, 13, 14, 15], [16, 17, 18, 19, 20, 21]]}
 Execution = {"Type":"Parallel", "Distribution":"Automatic"}
@@ -42,20 +41,18 @@ FLUX_ORDER = 1
 FLUX_LIMITER = "None"
 
 """
-"""
 Turb = NoTurb
 Initialization = {
 	"Flow":{"Type":"ISENTROPICEXPANSION", "TotalPressure":P0, "TotalTemperature":T0,
-		"StaticPressureSpecs":[
-			["Inlet_001", P1], ["Interface_001", P2], ["Outlet_001", P3]
-		], "Direction":"Z"},
+		"StaticPressureSpecs":[["domain3", "bc_9", P1], ["domain1", "bc_13", P2], ["domain8", "bc_6", P3]],
+		"Direction":"Z"
+	},
 	"Turbulence":{"Type":"UNIFORM", "Data":Turb}
 	}
 CFL = {"CFL0":1.0, "CFLMAX":5.0, "SER":0.5, "StartSERAt":5, "LocalTimeStepping":True}
 Iterations = {"MaxIterations":100, "TurbulenceStartsAt":-1}
 R1_RPM = -10080.0 * 1.0
 
-"""
 Turb = NoTurb
 Initialization = {
 	"Flow":{"Type":"READFROMFILE", "FileName":"1.cgns"},
@@ -85,62 +82,65 @@ CFL = {"CFL0":2.0, "CFLMAX":10.0, "SER":0.5, "StartSERAt":5, "LocalTimeStepping"
 Iterations = {"MaxIterations":10000, "TurbulenceStartsAt":0}
 P3 = 0.2 * P0
 R1_RPM = -10080.0 * 1.0
+"""
 
 FLUX_ORDER = 2
 FLUX_LIMITER = "MinMod"
 
 Turb = Turb_Turb
 Initialization = {
-	"Flow":{"Type":"READFROMFILE", "FileName":"3.cgns"},
-	"Turbulence":{"Type":"READFROMFILE", "FileName":"3.cgns"}
+	"Flow":{"Type":"READFROMFILE", "FileName":"4.cgns"},
+	"Turbulence":{"Type":"READFROMFILE", "FileName":"4.cgns"}
 	}
 CFL = {"CFL0":10.0, "CFLMAX":10.0, "SER":0.5, "LocalTimeStepping":False} # works
 CFL = {"CFL0":15.0, "CFLMAX":15.0, "SER":0.5, "LocalTimeStepping":False} # works a bit noisy convergence?
-CFL = {"CFL0":20.0, "CFLMAX":20.0, "SER":0.5, "LocalTimeStepping":False}
+CFL = {"CFL0":20.0, "CFLMAX":20.0, "SER":0.5, "StartSERAt":5, "LocalTimeStepping":False}
 Iterations = {"MaxIterations":10000, "TurbulenceStartsAt":0}
 P3 = 0.2 * P0
 R1_RPM = -10080.0 * 1.0
 """
+"""
 
 BCs = [
 	{
-	"Patches":[ "Inlet_*" ],
+	"Patches":[ Family("Nozzle_INFLOW") ],
 	"Type":"InletTotal",
 	"Data":[P0, T0, 0.0, 0.0, 1.0, Turb]
 	},
 	{
-	"Patches":[ "Outlet_*" ],
+	"Patches":[ Family("Rotor1_OUTFLOW") ],
 	"Type":"OutletStaticPressure",
 	"Data":[P3]
 	},
 	{
-	"Patches":[ "Hub_*" ],
+	"Patches":[
+		Family("Nozzle_HUB"), Family("Nozzle_HUB_UPSTREAM_1"), Family("Nozzle_HUB_DOWNSTREAM_1"),
+		Family("Nozzle_SHROUD"), Family("Nozzle_SHROUD_UPSTREAM_1"), Family("Nozzle_SHROUD_DOWNSTREAM_1"),
+		Family("Rotor1_HUB"), Family("Rotor1_HUB_UPSTREAM_1"), Family("Rotor1_HUB_DOWNSTREAM_1"),
+		Family("Rotor1_SHROUD"), Family("Rotor1_SHROUD_UPSTREAM_1"), Family("Rotor1_SHROUD_DOWNSTREAM_1"),
+		],
 	"Type":"InviscidWall",
 	},
 	{
-	"Patches":[ "Shroud_*" ],
-	"Type":"InviscidWall",
-	},
-	{
-	"Patches":[ "Blade_*" ],
+	"Patches":[ Family("Nozzle_Main_Blade"), Family("Rotor1_Main_Blade") ],
 	"Type":"ViscousWall",
 	},
 ]
 
 ZoneAttributes = [
 	{
-	"Zones":[ "Nozzle_*", "domain1", "domain3" ],
+	"Zones":[ Family("Nozzle") ],
 	"Periodicity":{"Type":"ROTATIONAL", "Data":[0.0, 0.0, 2.0 * math.pi / float(44)]}
 	},
 	{
-	"Zones":[ "Rotor1_*", "domain10", "domain15", "domain16", "domain17", "domain18", "domain19", "domain20", "domain21", "domain8" ],
+	"Zones":[ Family("Rotor1") ],
 	"RigidBodyMotion":{"Type":"ROTATIONAL", "Data":[0.0, 0.0, R1_RPM * 2.0 * math.pi / 60.0], "InitialOffset":[0.0, 0.0, 0.0]},
 	"Periodicity":{"Type":"ROTATIONAL", "Data":[0.0, 0.0, 2.0 * math.pi / float(88 / 2)]}
 	},
 ]
 
 Interfaces = [
-	["N-R1", ["Interface_001"], ["Interface_002", "Interface_003"]]
+	["N-R1", [ Family("Rotor_stator_10_left") ], [ Family("Rotor_stator_10_right") ]]
 ]
 
 Solver = {"Type":"LUSGS"}
