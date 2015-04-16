@@ -120,7 +120,7 @@
 	o2 = PyString_FromString($2->c_str());
 	size_t rangeSize = $3->size();
 	o3 = PyTuple_New(rangeSize);
-	for (int i = 0; i < rangeSize; ++i)
+	for (size_t i = 0; i < rangeSize; ++i)
 	{
 		PyObject* o = PyInt_FromLong($3->at(i));
 		PyTuple_SetItem(o3, i, o);
@@ -234,6 +234,60 @@
 	delete[] $1;
 }
 
+// ConnRead
+%typemap(in, numinputs=0) (std::string& connName, std::string& gridLocation, std::string& connectType, std::string& ptsetType, std::string& donorName, std::string& donorZoneType, std::string& donorPtsetType, std::string& donorDataType, std::vector<int>& pnts, std::vector<int>& donorData)
+	(std::string connName_, std::string gridLocation_, std::string connectType_, std::string ptsetType_, std::string donorName_, std::string donorZoneType_, std::string donorPtsetType_, std::string donorDataType_, std::vector<int> pnts_, std::vector<int> donorData_)
+{
+	$1 = &connName_;
+	$2 = &gridLocation_;
+	$3 = &connectType_;
+	$4 = &ptsetType_;
+	$5 = &donorName_;
+	$6 = &donorZoneType_;
+	$7 = &donorPtsetType_;
+	$8 = &donorDataType_;
+	$9 = &pnts_;
+	$10 = &donorData_;
+}
+%typemap(argout) (std::string& connName, std::string& gridLocation, std::string& connectType, std::string& ptsetType, std::string& donorName, std::string& donorZoneType, std::string& donorPtsetType, std::string& donorDataType, std::vector<int>& pnts, std::vector<int>& donorData)
+{
+	PyObject *o1, *o2, *o3, *o4, *o5, *o6, *o7, *o8, *o9, *o10;
+	o1 = PyString_FromString($1->c_str()); // connName
+	o2 = PyString_FromString($2->c_str()); // gridLocation
+	o3 = PyString_FromString($3->c_str()); // connectType
+	o4 = PyString_FromString($4->c_str()); // ptsetType
+	o5 = PyString_FromString($5->c_str()); // donorName
+	o6 = PyString_FromString($6->c_str()); // donorZoneType
+	o7 = PyString_FromString($7->c_str()); // donorPtsetType
+	o8 = PyString_FromString($8->c_str()); // donorDataType
+	o9 = PyList_New($9->size()); // pnts
+	o10 = PyList_New($10->size()); // donorData
+
+	// pnts
+	for (size_t i = 0; i < $9->size(); ++i)
+	{
+		PyList_SetItem(o9, i, PyInt_FromLong($9->at(i)));
+	}
+
+	// donorData
+	for (size_t i = 0; i < $10->size(); ++i)
+	{
+		PyList_SetItem(o10, i, PyInt_FromLong($10->at(i)));
+	}
+
+	$result = PyTuple_New(10);
+	PyTuple_SetItem($result, 0, o1);
+	PyTuple_SetItem($result, 1, o2);
+	PyTuple_SetItem($result, 2, o3);
+	PyTuple_SetItem($result, 3, o4);
+	PyTuple_SetItem($result, 4, o5);
+	PyTuple_SetItem($result, 5, o6);
+	PyTuple_SetItem($result, 6, o7);
+	PyTuple_SetItem($result, 7, o8);
+	PyTuple_SetItem($result, 8, o9);
+	PyTuple_SetItem($result, 9, o10);
+}
+
 // FamilyNameRead
 %typemap(in, numinputs=0) (std::string& nodeName, std::string& familyName)
 	(std::string nodeName_, std::string familyName_) {
@@ -241,7 +295,7 @@
 	$2 = &familyName_;
 }
 %typemap(argout) (std::string& nodeName, std::string& familyName) {
-	PyObject *o1, *o2, *o3;
+	PyObject *o1, *o2;
 	o1 = PyString_FromString($1->c_str());
 	o2 = PyString_FromString($2->c_str());
 	$result = PyTuple_New(2);
@@ -328,12 +382,68 @@
 %typemap(argout) (std::vector<std::string>& labels, std::vector<int>& indices) {
 	PyObject* o1;
 	o1 = PyTuple_New($1->size());
-	for (int i = 0; i < $1->size(); ++i)
+	for (size_t i = 0; i < $1->size(); ++i)
 	{
 		PyObject *o = PyString_FromString($1->at(i).c_str());
 		PyTuple_SetItem(o1, i, o);
 	}
 	$result = o1;
+}
+
+// DescriptorRead
+%typemap(in, numinputs = 0) (std::string& name, std::string& text)
+	(std::string name_, std::string text_)
+{
+	$1 = &name_;
+	$2 = &text_;
+}
+%typemap(argout) (std::string& name, std::string& text)
+{
+	PyObject* o = PyTuple_New(2);
+	PyTuple_SetItem(o, 0, PyString_FromString($1->c_str()));
+	PyTuple_SetItem(o, 1, PyString_FromString($2->c_str()));
+	$result = o;
+}
+
+// ArrayInfo
+%typemap(in, numinputs = 0) (std::string& arrayName, std::string& dataType, int* dataDimension, CGNS::cgsize_t* dimensionVector)
+	(std::string arrayName_, std::string dataType_, int dataDimension_, CGNS::cgsize_t dimensionVector_)
+{
+	$1 = &arrayName_;
+	$2 = &dataType_;
+	$3 = &dataDimension_;
+	$4 = &dimensionVector_;
+}
+%typemap(argout) (std::string& arrayName, std::string& dataType, int* dataDimension, CGNS::cgsize_t* dimensionVector)
+{
+	PyObject *o1, *o2, *o3, *o4;
+	o1 = PyString_FromString($1->c_str());
+	o2 = PyString_FromString($2->c_str());
+	o3 = PyInt_FromLong(*$3);
+	o4 = PyInt_FromLong(*$4);
+
+	PyObject* o = PyTuple_New(4);
+	PyTuple_SetItem(o, 0, o1);
+	PyTuple_SetItem(o, 1, o2);
+	PyTuple_SetItem(o, 2, o3);
+	PyTuple_SetItem(o, 3, o4);
+	$result = o;
+}
+
+// ArrayReadInteger
+%typemap(in, numinputs = 0) (std::vector<int>& integerArrayData) (std::vector<int> array_)
+{
+	$1 = &array_;
+}
+%typemap(argout) (std::vector<int>& integerArrayData)
+{
+	PyObject* o;
+	o = PyList_New($1->size());
+	for (size_t i = 0; i < $1->size(); ++i)
+	{
+		PyList_SetItem(o, i, PyInt_FromLong($1->at(i)));
+	}
+	$result = o;
 }
 
 // UserDataRead

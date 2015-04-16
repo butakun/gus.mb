@@ -22,6 +22,7 @@ int NZones(int fn, int B);
 int NBocos(int fn, int B, int Z);
 int N1to1(int fn, int B, int Z);
 int N1to1Global(int fn, int B);
+int NConns(int fn, int B, int Z);
 
 void BaseRead(int fn, int B, char* baseName, int* cell_dim, int* phys_dim);
 int BaseWrite(int fn, char* baseName, int cell_dim, int phys_dim);
@@ -49,6 +50,8 @@ void C1to1Write(int fn, int B, int Z, const char* connectName, const char* donor
 void C1to1PeriodicRead(int fn, int B, int Z, int I, float* rotationCenter, float* rotationAngle, float* translation);
 void C1to1PeriodicWrite(int fn, int B, int Z, int I, float* rotationCenterIn, float* rotationAngleIn, float* translationIn);
 
+void ConnRead(int fn, int B, int Z, int I, std::string& connName, std::string& gridLocation, std::string& connectType, std::string& ptsetType, std::string& donorName, std::string& donorZoneType, std::string& donorPtsetType, std::string& donorDataType, std::vector<int>& pnts, std::vector<int>& donorData);
+
 int NFamilies(int fn, int B);
 int NFamilyNames(int fn, int B, int Fam);
 void FamilyNameRead(int fn, int B, int Fam, int N, std::string& nodeName, std::string& familyName);
@@ -64,6 +67,9 @@ void RigidMotionRead(int fn, int B, int Z, int R, std::string& rmName, std::stri
 void GoPath(int fn, char* path);
 void Where(std::vector<std::string>& labels, std::vector<int>& indices);
 void DeleteNode(char* nodeName);
+
+int NDescriptors();
+void DescriptorRead(int D, std::string& name, std::string& text);
 
 int NArrays();
 void ArrayInfo(int A, std::string& arrayName, std::string& dataType, int* dataDimension, CGNS::cgsize_t* dimensionVector);

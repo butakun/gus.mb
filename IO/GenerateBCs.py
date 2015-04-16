@@ -59,6 +59,10 @@ class C1to1(object):
 	def __eq__(self, c):
 		return np.all(self.UniqueID == c.UniqueID)
 
+class CNMB(C1to1):
+	def __init__(self, zone, rang, donorZone, donorRange):
+		C1to1.__init__(self, zone, rang, donorZone, donorRange)
+
 class Family(object):
 	def __init__(self, name):
 		self.FamilyName = name
@@ -70,7 +74,7 @@ def CanonizeRange(r):
 
 def RangeString(r):
 
-	rr = map(lambda i: i - 1, r)
+	rr = map(lambda i: i - 1, r) # FIXME: stupid. isn't it better to do "np.array(r) - np.one(len(r))"?
 	return "%d %d %d %d %d %d" % (rr[0], rr[1], rr[2], rr[3], rr[4], rr[5])
 
 def TripletString(t):
@@ -415,6 +419,26 @@ def Main(filename, commsize):
 			transform = "%d %d %d" % (tr[0], tr[1], tr[2])
 			periodicity = "%s %s %s" % (TripletString(c1to1["RotationCenter"]), TripletString(c1to1["RotationAngle"]), TripletString(c1to1["Translation"]))
 			print "%s %d %d %s %s %s %s" % (name, tag, donorZoneID, selfRange, donorRange, transform, periodicity)
+
+		cnmbs = zone["CNMBs"]
+		print "# Non-matching Connectivities (name, tag, donorZoneID, selfRange, donorRange, transform)"
+		print len(cnmbs)
+		for cnmb in cnmbs:
+			name = cnmb["Name"]
+			donorZoneName = cnmb["DonorZoneName"]
+			donorZoneID = zones.FindZoneByName(donorZoneName)["Zone"]
+			sr = cnmb["Range"]
+			dr = cnmb["DonorPatch"]["DonorPointRange"]
+			tr = cnmb["DonorPatch"]["TransformMatrix"]
+			interf = CNMB(zone["Zone"], sr, donorZoneID, dr)
+			if not InterfaceDB.has_key(interf):
+				InterfaceDB[interf] = nextTag;
+				nextTag += 1
+			tag = InterfaceDB[interf]
+			selfRange = RangeString(sr)
+			donorRange = RangeString(dr)
+			transform = "%d %d %d" % (tr[0], tr[1], tr[2])
+			print "%s %d %d %s %s %s" % (name, tag, donorZoneID, selfRange, donorRange, transform)
 
 		print "# Interfaces"
 		print len(zone["Interfaces"])

@@ -40,6 +40,14 @@ def Main(filename):
 			print "  RotationAngle: ", c1to1["RotationAngle"]
 			print "  Translation: ", c1to1["Translation"]
 			print
+		print "CNMBs:"
+		for conn in zone["CNMBs"]:
+			print "  Name: ", conn["Name"]
+			print "  DonorZoneName: ", conn["DonorZoneName"]
+			print "  Range (self): ", conn["Range"]
+			#print "  donorData: ", conn["donorData"]
+			print "  DonorPatch: ", conn["DonorPatch"]
+			print "  ConnectionId: ", conn["ConnectionId"]
 		print
 
 if __name__ == "__main__":

@@ -15,11 +15,11 @@ add_library(IO
 	VTKWriter.cpp
 	)
 
-add_executable(TestCGNSMeshReader TestCGNSMeshReader.cpp)
-target_link_libraries(TestCGNSMeshReader IO Core ${CGNS_LIBRARIES})
+#add_executable(TestCGNSMeshReader TestCGNSMeshReader.cpp)
+#target_link_libraries(TestCGNSMeshReader Core IO ${CGNS_LIBRARIES})
 
 add_executable(ConvertCGNSToPLOT3D ConvertCGNSToPLOT3D.cpp)
-target_link_libraries(ConvertCGNSToPLOT3D IO Core ${CGNS_LIBRARIES})
+target_link_libraries(ConvertCGNSToPLOT3D Core IO ${CGNS_LIBRARIES})
 
 #add_library(CGNSFuncs CGNSFuncs.cpp)
 

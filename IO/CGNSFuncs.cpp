@@ -14,9 +14,9 @@ const size_t CGNS_NAME_LENGTH = 33;
 typedef struct {
     CGNS::CG_BCType_t type;
     const char* name;
-} bocotype_to_string_t;
+} boco_type_to_string_t;
 
-bocotype_to_string_t bocotype_to_string_map[] = {
+boco_type_to_string_t boco_type_to_string_map[] = {
     { (CGNS::CG_BCType_t)CG_UserDefined, "UserDefined" },
     { CGNS::CG_BCAxisymmetricWedge, "AxisymmetricWedge" },
     { CGNS::CG_BCDegenerateLine, "DegenerateLine" },
@@ -48,41 +48,117 @@ bocotype_to_string_t bocotype_to_string_map[] = {
 typedef struct {
     CGNS::CG_DataType_t type;
     const char* name;
-} datatype_to_string_t;
+} data_type_to_string_t;
 
-datatype_to_string_t datatype_to_string_map[] = {
+data_type_to_string_t data_type_to_string_map[] = {
     { CGNS::CG_Integer, "Integer" },
     { CGNS::CG_RealSingle, "RealSingle" },
     { CGNS::CG_RealDouble, "RealDouble" },
     { (CGNS::CG_DataType_t)0, "Null" }
 };
 
-const char* bocotype_to_string(CGNS::CG_BCType_t type)
+const char* boco_type_to_string(CGNS::CG_BCType_t type)
 {
-    bocotype_to_string_t* p = bocotype_to_string_map;
+    boco_type_to_string_t* p = boco_type_to_string_map;
     for (; p->type != 0; ++p)
         if (p->type == type)
             return p->name;
     return "Unknown";
 }
 
-CGNS::CG_BCType_t string_to_bocotype(std::string name)
+CGNS::CG_BCType_t string_to_boco_type(std::string name)
 {
-    bocotype_to_string_t* p = bocotype_to_string_map;
+    boco_type_to_string_t* p = boco_type_to_string_map;
     for (; p->type != 0; ++p)
         if (p->name == name)
             return p->type;
-    std::cerr << "string_to_bocotype: unknown boco type " << name << ", using CG_UserDefined instead." << std::endl;
+    std::cerr << "string_to_boco_type: unknown boco type " << name << ", using CG_UserDefined instead." << std::endl;
     return (CGNS::CG_BCType_t)CG_UserDefined;
 }
 
-const char* datatype_to_string(CGNS::CG_DataType_t type)
+const char* data_type_to_string(CGNS::CG_DataType_t type)
 {
-    datatype_to_string_t* p = datatype_to_string_map;
+    data_type_to_string_t* p = data_type_to_string_map;
     for (; p->type != 0; ++p)
         if (p->type == type)
             return p->name;
     return "Unknown";
+}
+
+const char* grid_location_to_string(CGNS::CG_GridLocation_t location)
+{
+    switch (location)
+    {
+    case CGNS::CG_Vertex:
+        return "Vertex";
+        break;
+    case CGNS::CG_CellCenter:
+        return "CellCenter";
+        break;
+    case CGNS::CG_IFaceCenter:
+        return "IFaceCenter";
+        break;
+    case CGNS::CG_JFaceCenter:
+        return "JFaceCenter";
+        break;
+    case CGNS::CG_KFaceCenter:
+        return "KFaceCenter";
+        break;
+    default:
+        return "Unknown";
+        break;
+    }
+}
+
+const char* grid_connectivity_type_to_string(CGNS::CG_GridConnectivityType_t type)
+{
+    switch (type)
+    {
+    case CGNS::CG_Overset:
+        return "Overset";
+        break;
+    case CGNS::CG_Abutting:
+        return "Abutting";
+        break;
+    case CGNS::CG_Abutting1to1:
+        return "Abutting1to1";
+        break;
+    default:
+        return "Unknown";
+        break;
+    }
+}
+
+const char* point_set_type_to_string(CGNS::CG_PointSetType_t type)
+{
+    switch (type)
+    {
+    case CGNS::CG_PointRange:
+        return "PointRange";
+        break;
+    case CGNS::CG_PointList:
+        return "PointList";
+        break;
+    default:
+        return "Unknown";
+        break;
+    }
+}
+
+const char* zone_type_to_string(CGNS::CG_ZoneType_t type)
+{
+    switch (type)
+    {
+    case CGNS::CG_Structured:
+        return "Structured";
+        break;
+    case CGNS::CG_Unstructured:
+        return "Unstructured";
+        break;
+    default:
+        return "Unknown";
+        break;
+    }
 }
 
 void cgns_assert(int err)
@@ -96,7 +172,7 @@ void cgns_assert(int err)
 int
 CGNSFuncs::Open(const char* filename, const char* mode)
 {
-    int err, fn, mode_;
+    int err, fn, mode_ = CG_MODE_READ;
     std::string modestr(mode);
     if (modestr == "r")
         mode_ = CG_MODE_READ;
@@ -259,6 +335,15 @@ CGNSFuncs::N1to1Global(int fn, int B)
     return n1to1s;
 }
 
+int
+CGNSFuncs::NConns(int fn, int B, int Z)
+{
+    int err, nconns;
+    err = CGNS::cg_nconns(fn, B, Z, &nconns);
+    cgns_assert(err);
+    return nconns;
+}
+
 void
 CGNSFuncs::BaseRead(int fn, int B, char* baseName, int* cell_dim, int* phys_dim)
 {
@@ -344,6 +429,7 @@ CGNSFuncs::SolInfo(int fn, int B, int Z, int S, std::string& solname, std::strin
 
     solname = solname_;
 
+#if 0
     switch (location_)
     {
     case CGNS::CG_Vertex:
@@ -365,6 +451,9 @@ CGNSFuncs::SolInfo(int fn, int B, int Z, int S, std::string& solname, std::strin
         location = "Unknown";
         break;
     }
+#else
+    location = grid_location_to_string(location_);
+#endif
 }
 
 int
@@ -409,7 +498,7 @@ CGNSFuncs::FieldInfo(int fn, int B, int Z, int S, int F, std::string& dataType, 
         break;
     }
 #else
-    dataType = datatype_to_string(dataType_);
+    dataType = data_type_to_string(dataType_);
 #endif
 
     fieldName = fieldName_;
@@ -422,7 +511,7 @@ CGNSFuncs::FieldRead(int fn, int B, int Z, int S, const char* fieldName, const c
     CGNS::cgsize_t rangemax[3] = { imax, jmax, kmax };
 
     std::string tmp(dataType);
-    CGNS::CG_DataType_t dataType_;
+    CGNS::CG_DataType_t dataType_ = CGNS::CG_RealSingle;
     if (tmp == "Integer")
         dataType_ = CGNS::CG_Integer;
     else if (tmp == "RealSingle")
@@ -453,7 +542,7 @@ CGNSFuncs::BocoInfo(int fn, int B, int Z, int BC, std::string& bocoName, std::st
     cgns_assert(err);
 
     bocoName = bocoName_;
-    bocoType = bocotype_to_string(bocoType_);
+    bocoType = boco_type_to_string(bocoType_);
 
     CGNS::cgsize_t* pnts = new CGNS::cgsize_t[npnts * 3];
     err = CGNS::cg_boco_read(fn, B, Z, BC, pnts, NULL);
@@ -473,7 +562,7 @@ CGNSFuncs::BocoWrite(int fn, int B, int Z, char* bocoName, char* bocoType, CGNS:
     // FIXME: ptsetType are ignored.
 
     int err;
-    CGNS::CG_BCType_t bocoType_ = string_to_bocotype(bocoType);
+    CGNS::CG_BCType_t bocoType_ = string_to_boco_type(bocoType);
     CGNS::CG_PointSetType_t ptsetType_ = CGNS::CG_PointRange;
     CGNS::cgsize_t npts = 2;
     int BC;
@@ -534,6 +623,48 @@ CGNSFuncs::C1to1PeriodicWrite(int fn, int B, int Z, int I, float* rotationCenter
     cgns_assert(err);
 }
 
+void
+CGNSFuncs::ConnRead(int fn, int B, int Z, int I, std::string& connName, std::string& gridLocation, std::string& connectType, std::string& ptsetType, std::string& donorName, std::string& donorZoneType, std::string& donorPtsetType, std::string& donorDataType, std::vector<int>& pnts, std::vector<int>& donorData)
+{
+    int err;
+    char connName_[CGNS_NAME_LENGTH], donorName_[CGNS_NAME_LENGTH];
+    CGNS::CG_GridLocation_t gridLocation_;
+    CGNS::CG_GridConnectivityType_t connectType_;
+    CGNS::CG_PointSetType_t ptsetType_, donorPtsetType_;
+    CGNS::cgsize_t npnts_, nDataDonor_;
+    CGNS::CG_ZoneType_t donorZoneType_;
+    CGNS::CG_DataType_t donorDataType_;
+    err = CGNS::cg_conn_info(fn, B, Z, I, connName_, &gridLocation_, &connectType_, &ptsetType_, &npnts_, donorName_, &donorZoneType_, &donorPtsetType_, &donorDataType_, &nDataDonor_);
+    cgns_assert(err);
+
+    CGNS::cgsize_t* pnts_ = new CGNS::cgsize_t[npnts_ * 3];
+    CGNS::cgsize_t* donorData_ = new CGNS::cgsize_t[nDataDonor_ * 3];
+    err = CGNS::cg_conn_read(fn, B, Z, I, pnts_, donorDataType_, donorData_);
+    for (CGNS::cgsize_t i = 0; i < npnts_; ++i)
+    {
+        pnts.push_back(pnts_[3 * i    ]);
+        pnts.push_back(pnts_[3 * i + 1]);
+        pnts.push_back(pnts_[3 * i + 2]);
+    }
+    for (CGNS::cgsize_t i = 0; i < nDataDonor_; ++i)
+    {
+        donorData.push_back(donorData_[3 * i    ]);
+        donorData.push_back(donorData_[3 * i + 1]);
+        donorData.push_back(donorData_[3 * i + 2]);
+    }
+    delete[] pnts_;
+    delete[] donorData_;
+
+    connName = connName_;
+    gridLocation = grid_location_to_string(gridLocation_);
+    connectType = grid_connectivity_type_to_string(connectType_);
+    ptsetType = point_set_type_to_string(ptsetType_);
+    donorName = donorName_;
+    donorZoneType = zone_type_to_string(donorZoneType_);
+    donorPtsetType = point_set_type_to_string(donorPtsetType_);
+    donorZoneType = data_type_to_string(donorDataType_);
+}
+
 int
 CGNSFuncs::NFamilies(int fn, int B)
 {
@@ -586,7 +717,7 @@ CGNSFuncs::FamilyBCRead(int fn, int B, int Fam, int BC, std::string& famBCName, 
     cgns_assert(err);
 
     famBCName = famBCName_;
-    bocoType = bocotype_to_string(bocoType_);
+    bocoType = boco_type_to_string(bocoType_);
 }
 
 void
@@ -706,6 +837,30 @@ CGNSFuncs::DeleteNode(char* nodeName)
 }
 
 int
+CGNSFuncs::NDescriptors()
+{
+    int err, nd;
+    err = CGNS::cg_ndescriptors(&nd);
+    cgns_assert(err);
+    return nd;
+}
+
+void
+CGNSFuncs::DescriptorRead(int D, std::string& name, std::string& text)
+{
+    int err;
+    char name_[CGNS_NAME_LENGTH];
+    char* text_;
+    err = CGNS::cg_descriptor_read(D, name_, &text_);
+    cgns_assert(err);
+
+    name = name_;
+    text = text_;
+
+    CGNS::cg_free(text_);
+}
+
+int
 CGNSFuncs::NArrays()
 {
     int err, narrays;
@@ -725,14 +880,33 @@ CGNSFuncs::ArrayInfo(int A, std::string& arrayName, std::string& dataType, int* 
     err = CGNS::cg_array_info(A, arrayName_, &dataType_, dataDimension, dimensionVector);
     cgns_assert(err);
 
-    dataType = datatype_to_string(dataType_);
+    arrayName = arrayName_;
+    dataType = data_type_to_string(dataType_);
 }
 
 void
 CGNSFuncs::ArrayReadInteger(int A, std::vector<int>& integerArrayData)
 {
     int err;
-    int data_;
+    char arrayName[CGNS_NAME_LENGTH];
+    CGNS::CG_DataType_t dataType;
+    int dataDimension;
+    CGNS::cgsize_t dimensionVector;
+    err = CGNS::cg_array_info(A, arrayName, &dataType, &dataDimension, &dimensionVector);
+    cgns_assert(err);
+    assert(dataType == CGNS::CG_RealSingle);
+
+    size_t nData = dataDimension * dimensionVector;
+    int* data = new int[nData];
+    err = CGNS::cg_array_read(A, (void *)data);
+    cgns_assert(err);
+
+    for (size_t i = 0; i < nData; ++i)
+    {
+        integerArrayData.push_back(data[i]);
+    }
+
+    delete[] data;
 }
 
 void

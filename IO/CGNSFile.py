@@ -157,6 +157,11 @@ class Patch1to1(Patch):
 		trans = np.array(self["Translation"])
 		return np.abs(rotAngle).sum() > 0.0 or np.abs(trans).sum() > 0.0
 
+class PatchNonMatching(Patch):
+
+	def __init__(self, pathRoot, dic):
+		Patch.__init__(self, pathRoot, dic)
+
 class CGNSFile(object):
 
 	def __init__(self, filename, mode = "r"):
@@ -203,6 +208,37 @@ class CGNSFile(object):
 				c1to1 = Patch1to1("%s/__NOTIMPLMENTED__" % zone.Path, {"Zone":zone, "Name":connectName, "DonorZoneName":donorName, "Range":selfRange, "DonorRange":donorRange, "Transform":transform, "RotationCenter":rotCenter, "RotationAngle":rotAngle, "Translation":trans})
 				c1to1s.append(c1to1)
 			zone["1to1s"] = c1to1s
+
+			nconns = CGNS.NConns(self.fn, B, Z)
+			conns = [] # general connectivity (NMB, FNMB, etc.)
+			for I in range(1, nconns + 1):
+				connectName, gridLocation, connectType, ptsetType, donorName, donorZoneType, donorPtsetType, donorDataType, pnts, donorData = CGNS.ConnRead(self.fn, B, Z, I)
+				assert(ptsetType == "PointRange")
+				# Numeca-specific data
+				# first check if this is an NMB connectivity. (it could also be an inter-stage mixing plane, which we ignore)
+				CGNS.GoPath(self.fn, "%s/ZoneGridConnectivity/%s" % (zone.Path, connectName))
+				ndescriptors = CGNS.NDescriptors()
+				if ndescriptors == 0:
+					continue
+				descriptors = {}
+				for D in range(1, ndescriptors + 1):
+					name, text = CGNS.DescriptorRead(D)
+					descriptors[name] = text
+				if not descriptors.has_key("ConnectionId"):
+					continue
+				arrays = {}
+				CGNS.GoPath(self.fn, "%s/ZoneGridConnectivity/%s/DonorPatch" % (zone.Path, connectName))
+				narrays = CGNS.NArrays()
+				for A in range(1, narrays + 1):
+					arrayName, dataType, dataDim, dimVec = CGNS.ArrayInfo(A)
+					arrayData = CGNS.ArrayReadInteger(A)
+					arrays[arrayName] = arrayData
+				cnmbDict = {"Zone":zone, "Name":connectName, "DonorZoneName":donorName, "Range":pnts, "donorData":donorData, "DonorPatch":arrays}
+				cnmbDict.update(descriptors)
+				conn =  PatchNonMatching("%s/ZoneGridConnectivity" % zone.Path, cnmbDict)
+				conns.append(conn)
+			zone["CNMBs"] = conns
+
 			zones.append(zone)
 
 		self.Zones = zones
