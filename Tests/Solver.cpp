@@ -12,11 +12,13 @@
 #include "BCFix.h"
 #include "BCExtrapolate.h"
 #include "BCViscousWall.h"
+#include "BCRotatingViscousWall.h"
 #include "BCOutletStaticPressure.h"
 #include "BCInletTotal.h"
 #include "BCEnforce2D.h"
 #include "BCForcePull.h"
 #include "Connectivity1to1.h"
+#include "ConnectivityAbutting.h"
 #include "IndexUtils.h"
 #include "FlowModel.h"
 #include "ResidualEvaluator.h"
@@ -738,6 +740,15 @@ main(int argc, char** argv)
                     std::getline(f, line);
                 }
 
+                std::getline(f, line); // # Non-matching connectivities
+                std::getline(f, line);
+                int numConnNMBs;
+                iss.clear(); iss.str(line); iss >> numConnNMBs;
+                for (int iconn = 0; iconn < numConnNMBs; ++iconn)
+                {
+                    std::getline(f, line);
+                }
+
                 std::getline(f, line); // # Interfaces
                 std::getline(f, line);
                 int numIFs;
@@ -824,6 +835,10 @@ main(int argc, char** argv)
                 {
                     iss >> data[0];
                 }
+                else if (type == "RotatingViscousWall")
+                {
+                    iss >> data[0] >> data[1] >> data[2] >> data[3]; // Twall, omegaX, omegaY, omegaZ
+                }
                 else if (type == "InletTotal")
                 {
                     iss >> data[0] >> data[1] >> data[2] >> data[3] >> data[4];
@@ -851,6 +866,10 @@ main(int argc, char** argv)
                 {
                     bc = new BCViscousWall(range, dir, data[0]);
                 }
+                else if (type == "RotatingViscousWall")
+                {
+                    bc = new BCRotatingViscousWall(range, dir, data[0], Vector3(data[1], data[2], data[3]));
+                }
                 else if (type == "OutletStaticPressure")
                 {
                     bc = new BCOutletStaticPressure(range, dir, data[0]);
@@ -875,14 +894,14 @@ main(int argc, char** argv)
             }
 
             // Connectivities
-            int numConns;
+            int numConn1to1s;
             std::getline(f, line);
             std::getline(f, line);
-            iss.clear(); iss.str(line); iss >> numConns;
+            iss.clear(); iss.str(line); iss >> numConn1to1s;
 
-            std::cout << "Reading connectivities for Block " << Z << std::endl;
-            CONSOLE << "Reading connectivities for Block " << Z << std::endl;
-            for (int iconn = 0; iconn < numConns; ++iconn)
+            std::cout << "Reading 1-to-1 connectivities for Block " << Z << std::endl;
+            CONSOLE << "Reading 1-to-1 connectivities for Block " << Z << std::endl;
+            for (int iconn = 0; iconn < numConn1to1s; ++iconn)
             {
                 std::getline(f, line);
                 iss.clear(); iss.str(line);
@@ -927,6 +946,40 @@ main(int argc, char** argv)
                 block->RegisterBC(conn);
                 std::cout << "Added Conn1to1 " << connName << " : self " << selfRange << " donor " << donorRange << std::endl;
                 CONSOLE << "Added Conn1to1 " << connName << " : self " << selfRange << " donor " << donorRange << std::endl;
+            }
+
+            int numConnNMBs;
+            std::getline(f, line);
+            std::getline(f, line);
+            iss.clear(); iss.str(line); iss >> numConnNMBs;
+
+            std::cout << "Reading non-matching connectivities for Block " << Z << std::endl;
+            CONSOLE << "Reading non-matching connectivities for Block " << Z << std::endl;
+            for (int iconn = 0; iconn < numConnNMBs; ++iconn)
+            {
+                std::getline(f, line);
+                iss.clear(); iss.str(line);
+
+                std::string connName;
+                int tag;
+                int donorBlock;
+                iss >> connName >> tag >> donorBlock;
+
+                int sr[6], dr[6], tr[3];
+                double center[3], angle[3], translation[3];
+                iss >> sr[0] >> sr[1] >> sr[2] >> sr[3] >> sr[4] >> sr[5];
+                iss >> dr[0] >> dr[1] >> dr[2] >> dr[3] >> dr[4] >> dr[5];
+                iss >> tr[0] >> tr[1] >> tr[2];
+
+                IndexRange selfRange(sr[0], sr[1], sr[2], sr[3], sr[4], sr[5]);
+                IndexRange donorRange(dr[0], dr[1], dr[2], dr[3], dr[4], dr[5]);
+                IndexTransform::Canonize(tr, selfRange, donorRange);
+                IndexTransform transform(tr, selfRange, donorRange);
+
+                Direction dir = IndexUtils::PatchDirection(block->MeshRange(), selfRange);
+                ConnectivityAbutting* conn = new ConnectivityAbutting(
+                    selfRange, dir, *block, donorRange, donorBlock, tag
+                    );
             }
 
             // Interfaces
