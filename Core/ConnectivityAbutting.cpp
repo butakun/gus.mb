@@ -2,8 +2,15 @@
 
 #include "ConnectivityAbutting.h"
 
-ConnectivityAbutting::ConnectivityAbutting(const IndexRange& meshRange, Direction dir)
-:   Connectivity(meshRange, dir)
+ConnectivityAbutting::ConnectivityAbutting(
+    const IndexRange& meshRange, Direction dir, const Block& block,
+    const IndexRange& donorMeshRange, int donorBlockID,
+    int tag
+    )
+:   Connectivity(meshRange, dir),
+    mBlockID(block.ID()),
+    mDonorBlockID(donorBlockID),
+    mTag(tag)
 {
 }
 

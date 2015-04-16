@@ -78,9 +78,21 @@ bool operator == (const IndexIJK& i1, const IndexIJK& i2)
 }
 
 inline
+bool operator != (const IndexIJK& i1, const IndexIJK& i2)
+{
+    return i1.I != i2.I || i1.J != i2.J || i1.K != i2.K;
+}
+
+inline
 bool operator == (const IndexRange& r1, const IndexRange& r2)
 {
     return r1.Start == r2.Start && r1.End == r2.End;
+}
+
+inline
+bool operator != (const IndexRange& r1, const IndexRange& r2)
+{
+    return r1.Start != r2.Start || r1.End != r2.End;
 }
 
 inline
@@ -225,7 +237,7 @@ public:
     void RMS(T* rms, const IndexRange& range) const;
     void RMS(T* rms, IndexIJK* maxlocs, const IndexRange& range) const;
 
-    Structured<T>& operator = (const Structured<T>& A) { SetTo(A); return *this; }
+    //Structured<T>& operator = (const Structured<T>& A) { SetTo(A); return *this; }
     Structured<T>& operator = (const T& value) { SetTo(value); return *this; }
     Structured<T>& operator *= (const T& value);
 

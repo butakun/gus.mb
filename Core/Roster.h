@@ -32,7 +32,11 @@ public:
     const Interfaces& GetInterfaces() const { return mInterfaces; }
     Interfaces& GetInterfaces() { return mInterfaces; }
 
-    // Data Storage
+    // Global mesh data (temporary)
+    void SetMeshFileName(const char* filename, double scaling);
+    const Structured<double>& GetMeshForBlock(int blockID);
+    void ReleaseCachedMesh();
+
     // a tag is a positive (non-zero) integer.
     int CreateNewTag(const char* name);
     int FindTagByName(const char* name) const; // returns zero if the tag does not exist.
@@ -58,6 +62,11 @@ private:
 
     // Interfaces
     Interfaces mInterfaces;
+
+    // Cached mesh (separate from the mesh retained by local blocks, used for interfaces, non-matching patches, etc.)
+    std::string mMeshFileName;
+    double mMeshScaling;
+    std::map<int, Structured<double> > mCachedMesh;
 
     // Data
     class TaggedBlockDataBase

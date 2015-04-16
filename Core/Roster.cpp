@@ -3,6 +3,7 @@
 #include "Roster.h"
 #include "Block.h"
 #include "Communicator.h"
+#include "CGNSReader.h"
 #include <algorithm>
 #include <cassert>
 
@@ -70,6 +71,44 @@ void
 Roster::AddInterface(AbuttingInterface* interface)
 {
     mInterfaces.push_back(interface);
+}
+
+void
+Roster::SetMeshFileName(const char* filename, double scaling)
+{
+    // FIXME: mutex!
+    mMeshFileName = filename;
+    mMeshScaling = scaling;
+    ReleaseCachedMesh();
+}
+
+const Structured<double>&
+Roster::GetMeshForBlock(int blockID)
+{
+    if (mCachedMesh.find(blockID) == mCachedMesh.end())
+    {
+        CGNSReader* reader = new CGNSReader(mMeshFileName.c_str());
+        Structured<double> XYZ;
+        std::string zoneName;
+        int Z = blockID;
+        reader->ReadMesh(Z, XYZ, zoneName);
+        delete reader;
+
+        mCachedMesh[blockID] = XYZ;
+    }
+
+    return mCachedMesh[blockID];
+}
+
+void
+Roster::ReleaseCachedMesh()
+{
+    for (std::map<int, Structured<double> >::const_iterator i = mCachedMesh.begin();
+        i != mCachedMesh.end(); ++i)
+    {
+        delete i->second.Data;
+    }
+    mCachedMesh.clear();
 }
 
 int

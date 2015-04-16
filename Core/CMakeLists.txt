@@ -34,6 +34,7 @@ add_library(Core
 	BCSymmetry.cpp
 	BCInviscidWall.cpp
 	BCViscousWall.cpp
+	BCRotatingViscousWall.cpp
 	BCOutletStaticPressure.cpp
 	BCInletTotal.cpp
 	BCCopy.cpp
@@ -41,6 +42,7 @@ add_library(Core
 	BCEnforce2D.cpp
 	BCForcePull.cpp
 	Connectivity1to1.cpp
+	ConnectivityAbutting.cpp
 	Integrator.cpp
 	FlowModel.cpp
 	TurbulenceSpec.cpp
@@ -50,32 +52,39 @@ add_library(Core
 	InterfaceDataExchanger.cpp
 	FieldInitializer.cpp
 	IterationContext.cpp
+	BitmapMeshInterpolator.cpp
 	)
 
 #add_executable(Test Test.cpp)
 #target_link_libraries(Test Core)
 
+add_executable(TestMatrix33 TestMatrix33.cpp)
+target_link_libraries(TestMatrix33 Core IO ${CGNS_LIBRARIES})
+
 add_executable(TestIndices TestIndices.cpp)
-target_link_libraries(TestIndices Core)
+target_link_libraries(TestIndices Core IO ${CGNS_LIBRARIES})
 
 add_executable(TestStructuredExpr TestStructuredExpr.cpp)
-target_link_libraries(TestStructuredExpr Core)
+target_link_libraries(TestStructuredExpr Core IO ${CGNS_LIBRARIES})
 
 add_executable(ShockTube ShockTube.cpp)
-target_link_libraries(ShockTube Core)
+target_link_libraries(ShockTube Core IO ${CGNS_LIBRARIES})
 
 add_executable(TestFlatPlate TestFlatPlate.cpp)
-target_link_libraries(TestFlatPlate IO Core ${CGNS_LIBRARIES})
+target_link_libraries(TestFlatPlate Core IO ${CGNS_LIBRARIES})
 
 add_executable(TestRamp TestRamp.cpp)
-target_link_libraries(TestRamp IO Core ${CGNS_LIBRARIES})
+target_link_libraries(TestRamp Core IO ${CGNS_LIBRARIES})
 
 add_executable(TestChannel TestChannel.cpp)
-target_link_libraries(TestChannel IO Core ${CGNS_LIBRARIES})
+target_link_libraries(TestChannel Core IO ${CGNS_LIBRARIES})
 
 add_executable(TestSlidingMesh TestSlidingMesh.cpp)
-target_link_libraries(TestSlidingMesh IO Core)
+target_link_libraries(TestSlidingMesh Core IO ${CGNS_LIBRARIES})
 
 add_executable(TestGMRES TestGMRES.cpp)
-target_link_libraries(TestGMRES Core)
+target_link_libraries(TestGMRES Core IO ${CGNS_LIBRARIES})
+
+add_executable(TestBitmapMeshInterpolator TestBitmapMeshInterpolator.cpp)
+target_link_libraries(TestBitmapMeshInterpolator Core IO ${CGNS_LIBRARIES})
 

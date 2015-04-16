@@ -21,6 +21,8 @@ public:
     void Multiply(Vector3& v) const; // v = M * v
     void Multiply(double* v) const; // v = M * v
 
+    Matrix33 Inverse() const;
+
 protected:
 
 private:
@@ -65,6 +67,19 @@ Matrix33::RotationMatrix(const Vector3& rot)
 
 inline
 void
+Matrix33::Multiply(Vector3& v) const
+{
+    double r[3];
+    r[0] = M[0][0] * v[0] + M[0][1] * v[1] + M[0][2] * v[2];
+    r[1] = M[1][0] * v[0] + M[1][1] * v[1] + M[1][2] * v[2];
+    r[2] = M[2][0] * v[0] + M[2][1] * v[1] + M[2][2] * v[2];
+    v[0] = r[0];
+    v[1] = r[1];
+    v[2] = r[2];
+}
+
+inline
+void
 Matrix33::Multiply(double* v) const
 {
     double r[3];
@@ -74,6 +89,72 @@ Matrix33::Multiply(double* v) const
     v[0] = r[0];
     v[1] = r[1];
     v[2] = r[2];
+}
+
+inline
+Matrix33
+Matrix33::Inverse() const
+{
+    Matrix33 Inv;
+    double d11, d12, d13;
+    double d21, d22, d23;
+    double d31, d32, d33;
+    double deti;
+
+    d11 = M[1][1] * M[2][2] - M[1][2] * M[2][1];
+    d12 = M[1][0] * M[2][2] - M[1][2] * M[2][0];
+    d13 = M[1][0] * M[2][1] - M[1][1] * M[2][0];
+
+    d21 = M[0][1] * M[2][2] - M[0][2] * M[2][1];
+    d22 = M[0][0] * M[2][2] - M[0][2] * M[2][0];
+    d23 = M[0][0] * M[2][1] - M[0][1] * M[2][0];
+
+    d31 = M[0][1] * M[1][2] - M[0][2] * M[1][1];
+    d32 = M[0][0] * M[1][2] - M[0][2] * M[1][0];
+    d33 = M[0][0] * M[1][1] - M[0][1] * M[1][0];
+
+    deti = 1.0 / (M[0][0] * d11 - M[0][1] * d12 + M[0][2] * d13);
+
+    Inv(0, 0) =  deti * d11;
+    Inv(0, 1) = -deti * d21;
+    Inv(0, 2) =  deti * d31;
+    Inv(1, 0) = -deti * d12;
+    Inv(1, 1) =  deti * d22;
+    Inv(1, 2) = -deti * d32;
+    Inv(2, 0) =  deti * d13;
+    Inv(2, 1) = -deti * d23;
+    Inv(2, 2) =  deti * d33;
+
+    return Inv;
+}
+
+inline
+Vector3
+operator * (const Matrix33& A, const Vector3& v)
+{
+    Vector3 Av = v;
+    A.Multiply(Av);
+    return Av;
+}
+
+inline
+Matrix33
+operator * (const Matrix33& A, const Matrix33& B)
+{
+    Matrix33 C;
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            double c = 0.0;
+            for (int l = 0; l < 3; ++l)
+            {
+                c += A(i, l) * B(l, j);
+            }
+            C(i, j) = c;
+        }
+    }
+    return C;
 }
 
 inline

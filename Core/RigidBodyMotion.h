@@ -97,6 +97,11 @@ public:
         return v;
     }
 
+    Vector3 VelocityAt(const Vector3& pC) const
+    {
+        return EntrainmentVelocityAt(pC);
+    }
+
 protected:
     void Initialize()
     {
