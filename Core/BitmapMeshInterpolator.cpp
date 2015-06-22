@@ -294,3 +294,8 @@ BitmapMeshInterpolator::ComputeCellFaceWeights()
     }
 }
 
+void
+BitmapMeshInterpolator::ComputeMappingWeights()
+{
+}
+

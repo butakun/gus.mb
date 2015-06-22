@@ -23,6 +23,9 @@ public:
     //virtual void AllGather() const = 0;
     virtual bool Any(bool flag) const = 0; // AllReduce and LogicalOr operation on boolean flags from all ranks.
 
+    virtual int ReduceSum(int value, int root) const = 0;
+    virtual int AllReduceSum(int value) const = 0;
+
     virtual std::ostream& Console() = 0;
 
     virtual int ReserveTag(void* key) = 0;

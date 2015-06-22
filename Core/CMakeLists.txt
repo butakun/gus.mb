@@ -48,6 +48,7 @@ add_library(Core
 	TurbulenceSpec.cpp
 	KOmega1988.cpp
 	AbuttingInterface.cpp
+	SimplePlanarAbuttingInterface.cpp
 	PlanarMapping.cpp
 	InterfaceDataExchanger.cpp
 	FieldInitializer.cpp

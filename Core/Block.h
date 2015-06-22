@@ -50,8 +50,9 @@ public:
     void ComputeTransportProperties(Structured<double>& MuK, Structured<double>& U, const Structured<double>& Radius) const;
     void ComputeTurbulentTransportProperties();
 
-    bool CheckNegatives() const { return CheckNegatives(mU); }
-    bool CheckNegatives(const Structured<double>& U) const;
+    bool CheckNegatives() const { std::vector<IndexIJK> indices; return CheckNegatives(mU, indices); }
+    bool CheckNegatives(std::vector<IndexIJK>& indices) const { return CheckNegatives(mU, indices); }
+    bool CheckNegatives(const Structured<double>& U, std::vector<IndexIJK>& indices) const;
 
     BCs& GetBCs() { return mBCs; }
     const BCs& GetBCs() const { return mBCs; }

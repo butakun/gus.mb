@@ -72,9 +72,9 @@ public:
     class DonorCellFace {
     public:
         int PatchID;
-        IndexIJK CellFaceIJK;
+        IndexIJK Index;
         double Weight;
-        DonorCellFace(int id, const IndexIJK& ijk, double w) : PatchID(id), CellFaceIJK(ijk), Weight(w) {}
+        DonorCellFace(int id, const IndexIJK& ijk, double w) : PatchID(id), Index(ijk), Weight(w) {}
     };
     typedef std::vector<DonorCellFace> DonorCellFaces;
 

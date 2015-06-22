@@ -22,6 +22,9 @@ public:
     virtual void Broadcast(int* buffer, int count, int root) const;
     virtual bool Any(bool flag) const;
 
+    virtual int ReduceSum(int value, int root) const;
+    virtual int AllReduceSum(int value) const;
+
 protected:
 
 private:

@@ -335,13 +335,11 @@ Block::ComputeTurbulentTransportProperties()
 }
 
 bool
-Block::CheckNegatives(const Structured<double>& U) const
+Block::CheckNegatives(const Structured<double>& U, std::vector<IndexIJK>& indices) const
 {
     std::ostream& log = Communicator::GetInstance()->Console();
 
     IndexRange range = CellRange();
-
-    std::vector<IndexIJK> indices;
 
     for (int k = range.Start.K; k <= range.End.K; ++k)
     {

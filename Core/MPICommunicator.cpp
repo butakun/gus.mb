@@ -101,3 +101,25 @@ MPICommunicator::Any(bool flag) const
     return recv != 0;
 }
 
+int
+MPICommunicator::ReduceSum(int value, int root) const
+{
+    int err;
+    int recv;
+    err = MPI_Reduce(&value, &recv, 1, MPI_INT, MPI_SUM, root, MPI_COMM_WORLD);
+    assert(err == MPI_SUCCESS);
+
+    return recv;
+}
+
+int
+MPICommunicator::AllReduceSum(int value) const
+{
+    int err;
+    int recv;
+    err = MPI_Allreduce(&value, &recv, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    assert(err == MPI_SUCCESS);
+
+    return recv;
+}
+
