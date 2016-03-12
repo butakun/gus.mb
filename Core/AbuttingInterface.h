@@ -1,4 +1,3 @@
-// $Id: AbuttingInterface.h 261 2013-01-05 12:01:20Z kato $
 #ifndef INCLUDED_ABUTTING_INTERFACE_H__
 #define INCLUDED_ABUTTING_INTERFACE_H__
 
@@ -11,19 +10,19 @@
 #include <map>
 #include <iostream>
 
-class PlanarMapping;
 class InterfaceDataAdaptorBase;
 
 class AbuttingInterface
 {
 public:
-    typedef std::vector<BlockPatch> BlockPatches;
     typedef std::map<int, Structured<double> > PatchMeshes;
-    typedef std::map<int, PlanarMapping*> Mappings;
-
-    static AbuttingInterface* New(const BlockPatches& blockPatches, const BlockPatches& donorBlockPatches);
 
     virtual ~AbuttingInterface();
+
+    virtual void InitializeMapping() = 0;
+    virtual void MapMesh(const IterationContext& iteration) = 0;
+    virtual void MapData(const Model& model, InterfaceDataAdaptorBase* adaptor) const = 0;
+    virtual void DumpMappingResult(std::ostream& o) const = 0;
 
     const BlockPatches& SelfBlockPatches() const { return mBlockPatches; }
     const BlockPatches& DonorBlockPatches() const { return mDonorBlockPatches; }
@@ -35,27 +34,18 @@ public:
     void SetPatchMesh(int blockID, const Structured<double>& XYZ); // FIXME: not elegant at all
     const PatchMeshes& GetPatchMeshes() const { return mPatchMeshes; }
 
-    void InitializeMapping();
-    void MapMesh(const IterationContext& iteration);
-    void MapData(const Model& model, InterfaceDataAdaptorBase* adaptor) const;
-    const PlanarMapping& GetMapper(int blockPatchUniqueID) const;
-
-    void DumpMappingResult(std::ostream& o) const;
-
 protected:
     AbuttingInterface(const BlockPatches& blockPatches, const BlockPatches& donorBlockPatches)
     : mBlockPatches(blockPatches), mDonorBlockPatches(donorBlockPatches)
     {}
 
-    void ConvertMappedDataToLocalFrame(const Model& model, Structured<double>& U, const BlockPatch& bp) const;
+    PatchMeshes& GetPatchMeshes() { return mPatchMeshes; }
 
 private:
     BlockPatches mBlockPatches;
     BlockPatches mDonorBlockPatches;
 
     PatchMeshes mPatchMeshes;
-
-    Mappings mMappings;
 };
 
 typedef std::vector<AbuttingInterface*> Interfaces;

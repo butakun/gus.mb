@@ -5,6 +5,9 @@ include_directories($(CMAKE_CURRENT_SOURCE_DIR) ${Albastru_SOURCE_DIR}/IO)
 find_package(CGNS REQUIRED)
 include_directories(${CGNS_INCLUDE_DIR})
 
+find_package(ANN REQUIRED)
+include_directories(${ANN_INCLUDE_DIR})
+
 add_library(Core
 	Structured.cpp
 	Physics.cpp
@@ -50,6 +53,7 @@ add_library(Core
 	AbuttingInterface.cpp
 	SimplePlanarAbuttingInterface.cpp
 	PlanarMapping.cpp
+	GeometricMapping.cpp
 	InterfaceDataExchanger.cpp
 	FieldInitializer.cpp
 	IterationContext.cpp

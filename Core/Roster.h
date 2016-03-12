@@ -35,6 +35,7 @@ public:
     // Global mesh data (temporary)
     void SetMeshFileName(const char* filename, double scaling);
     const Structured<double>& GetMeshForBlock(int blockID);
+    const Structured<double>& GetMeshForBlockPatch(const BlockPatch& bp);
     void ReleaseCachedMesh();
 
     // a tag is a positive (non-zero) integer.
@@ -67,6 +68,7 @@ private:
     std::string mMeshFileName;
     double mMeshScaling;
     std::map<int, Structured<double> > mCachedMesh;
+    std::map<int, Structured<double> > mBlockPatchMeshes;
 
     // Data
     class TaggedBlockDataBase

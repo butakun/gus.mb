@@ -95,7 +95,7 @@ InterfaceDataExchanger::Exchange()
     assert(mRecvReqs.size() == 0);
 
     // Send
-    for (AbuttingInterface::BlockPatches::const_iterator i = mInterface.SelfBlockPatches().begin();
+    for (BlockPatches::const_iterator i = mInterface.SelfBlockPatches().begin();
         i != mInterface.SelfBlockPatches().end(); ++i)
     {
         const BlockPatch& self = *i;
@@ -103,7 +103,7 @@ InterfaceDataExchanger::Exchange()
         assert(block != NULL);
         const Structured<double>& sendData = Roster::GetInstance()->GetBlockData(*block, mDataName.c_str());
         //LOG << "IDF::Exchange: preparing to send named data " << mDataName << " from Block " << block->ID() << " buf = " << sendData.Data << std::endl;
-        for (AbuttingInterface::BlockPatches::const_iterator j = mInterface.DonorBlockPatches().begin();
+        for (BlockPatches::const_iterator j = mInterface.DonorBlockPatches().begin();
             j != mInterface.DonorBlockPatches().end(); ++j)
         {
             const BlockPatch& donor = *j;
@@ -120,7 +120,7 @@ InterfaceDataExchanger::Exchange()
     }
 
     // Receive
-    for (AbuttingInterface::BlockPatches::const_iterator i = mInterface.DonorBlockPatches().begin();
+    for (BlockPatches::const_iterator i = mInterface.DonorBlockPatches().begin();
         i != mInterface.DonorBlockPatches().end(); ++i)
     {
         const BlockPatch& donor = *i;

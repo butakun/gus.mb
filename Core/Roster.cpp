@@ -100,6 +100,16 @@ Roster::GetMeshForBlock(int blockID)
     return mCachedMesh[blockID];
 }
 
+const Structured<double>&
+Roster::GetMeshForBlockPatch(const BlockPatch& bp)
+{
+    if (mBlockPatchMeshes.find(bp.UniqueID()) == mBlockPatchMeshes.end())
+    {
+        const Structured<double>& XYZ = GetMeshForBlock(bp.BlockID());
+        assert(false); // FIXME
+    }
+}
+
 void
 Roster::ReleaseCachedMesh()
 {

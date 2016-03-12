@@ -29,7 +29,7 @@
 #include "LUSGSIntegrator.h"
 #include "TimeStepEvaluator.h"
 #include "StructuredDataExchanger.h"
-#include "AbuttingInterface.h"
+#include "SimplePlanarAbuttingInterface.h"
 #include "InterfaceDataExchanger.h"
 #include "CGNSReader.h"
 #include "CGNSWriter.h"
@@ -451,8 +451,76 @@ void WriteSolution(const char* solutionStem, const char* residualStem, int timeS
     COMM->Console() << "Saved solution (in vtk format) and it took " << dt << " seconds" << std::endl;
 }
 
-int
-main(int argc, char** argv)
+void WriteNegativeCells(const char* filename, const std::map<int, std::vector<IndexIJK> >& negativeBlockIndices, double scale)
+{
+    Communicator* COMM = Communicator::GetInstance();
+
+    // Count the total number of points
+    size_t numberOfNegativeCells = 0, totalNumberOfNegativeCells;
+    for (std::map<int, std::vector<IndexIJK> >::const_iterator i = negativeBlockIndices.begin();
+        i != negativeBlockIndices.end(); ++i)
+    {
+        numberOfNegativeCells += i->second.size();
+    }
+    COMM->Console() << "Number of negative cells in Rank " << COMM->MyRank() << " = " << numberOfNegativeCells << std::endl;
+    totalNumberOfNegativeCells = COMM->ReduceSum(numberOfNegativeCells, 0);
+    if (COMM->MyRank() == 0)
+    {
+        COMM->Console() << "Total number of negative cells = " << totalNumberOfNegativeCells << std::endl;
+    }
+
+    std::ofstream* of;
+    COMM->Barrier();
+    for (int rank = 0; rank < COMM->Size(); ++rank)
+    {
+        if (rank == COMM->MyRank())
+        {
+            if (rank == 0)
+            {
+                of = new std::ofstream(filename);
+                *of << "# vtk DataFile Version 2.0" << std::endl
+                    << "Negative Cells" << std::endl
+                    << "ASCII" << std::endl
+                    << "DATASET POLYDATA" << std::endl
+                    << "POINTS " << totalNumberOfNegativeCells << " double" << std::endl;
+            }
+            else
+            {
+                of = new std::ofstream(filename, std::ofstream::out | std::ofstream::app);
+            }
+
+            for (std::map<int, std::vector<IndexIJK> >::const_iterator i = negativeBlockIndices.begin();
+                i != negativeBlockIndices.end(); ++i)
+            {
+                int blockID = i->first;
+                const std::vector<IndexIJK>& indices = i->second;
+                // indices contained in "indices" are all from the local blocks, so no need to synchronize here
+                Block* block = dynamic_cast<Block*>(Roster::GetInstance()->GetBlock(blockID));
+                const Structured<double>& XYZ = block->XYZ();
+                for (std::vector<IndexIJK>::const_iterator iv = indices.begin();
+                    iv != indices.end(); ++iv)
+                {
+                    const IndexIJK& ijk = *iv;
+                    Vector3 v1(XYZ(ijk - IndexIJK(1, 1, 1)));
+                    Vector3 v2(XYZ(ijk - IndexIJK(0, 1, 1)));
+                    Vector3 v3(XYZ(ijk - IndexIJK(0, 0, 1)));
+                    Vector3 v4(XYZ(ijk - IndexIJK(1, 0, 1)));
+                    Vector3 v5(XYZ(ijk - IndexIJK(1, 1, 0)));
+                    Vector3 v6(XYZ(ijk - IndexIJK(0, 1, 0)));
+                    Vector3 v7(XYZ(ijk - IndexIJK(0, 0, 0)));
+                    Vector3 v8(XYZ(ijk - IndexIJK(1, 0, 0)));
+                    Vector3 vc = 0.125 * (v1 + v2 + v3 + v4 + v5 + v6 + v7 + v8) / scale;
+                    *of << vc.X() << ' ' << vc.Y() << ' ' << vc.Z() << std::endl;
+                }
+            }
+            of->close();
+            delete of;
+        }
+        COMM->Barrier();
+    }
+}
+
+int main(int argc, char** argv)
 {
     assert(argc > 1);
 
@@ -471,6 +539,7 @@ main(int argc, char** argv)
     }
 
     Blocks blocks; // local blocks
+    double meshScale = 1.0;
     bool unsteady = false;
     double dTimeReal, Time0;
     int subIterations = 1;
@@ -512,8 +581,7 @@ main(int argc, char** argv)
         // Scale
         std::getline(f, line); std::getline(f, line);
         iss.clear(); iss.str(line);
-        double scale = 1.0;
-        iss >> scale;
+        iss >> meshScale;
 
         // Reference values
         std::getline(f, line); std::getline(f, line);
@@ -698,8 +766,8 @@ main(int argc, char** argv)
                 std::string zoneName;
                 meshReader.ReadMesh(bdef.Z, block->XYZ(), zoneName, bdef.MeshRange);
                 CONSOLE << "read zone " << bdef.Z << " named " << zoneName << std::endl;
-                CONSOLE << "scaling the mesh by " << scale << std::endl;
-                block->XYZ() *= scale;
+                CONSOLE << "scaling the mesh by " << meshScale << std::endl;
+                block->XYZ() *= meshScale;
                 CONSOLE << "offseting the mesh" << std::endl;
                 bdef.Offset.ApplyOffset(block->XYZ()); // NOTE: offset is applied *after* scaling
                 block->ComputeMetrics();
@@ -1031,7 +1099,7 @@ main(int argc, char** argv)
                 }
                 std::cout << "read self-donor = " << selfPatches.size() << ", " << donorPatches.size() << std::endl;
                 CONSOLE << "read self-donor = " << selfPatches.size() << ", " << donorPatches.size() << std::endl;
-                AbuttingInterface* interface = AbuttingInterface::New(selfPatches, donorPatches);
+                AbuttingInterface* interface = SimplePlanarAbuttingInterface::New(selfPatches, donorPatches);
 
                 // Read the mesh for blocks affected by the interface.
                 std::set<int> blockIDs = interface->BlockIDs();
@@ -1043,8 +1111,8 @@ main(int argc, char** argv)
                     Structured<double> XYZ(3, bdefDonor.MeshRange);
                     std::string zoneName;
                     meshReader.ReadMesh(bdefDonor.Z, XYZ, zoneName);
-                    CONSOLE << "scaling the mesh by " << scale << std::endl;
-                    XYZ *= scale;
+                    CONSOLE << "scaling the mesh by " << meshScale << std::endl;
+                    XYZ *= meshScale;
                     CONSOLE << "offseting the mesh" << std::endl;
 #if 0
                     std::ostringstream fileNameSS;
@@ -1450,15 +1518,19 @@ main(int argc, char** argv)
             frms << iloop << '\t' << rmsTotal << '\t' << cfl << std::endl;
 
             bool negative = false;
+            std::map<int, std::vector<IndexIJK> > negativeBlockIndices;
             for (size_t iblock = 0; iblock < blocks.size(); ++iblock)
             {
-                negative = negative || blocks[iblock]->CheckNegatives();
+                std::vector<IndexIJK> negativeIndices;
+                negative = negative || blocks[iblock]->CheckNegatives(negativeIndices);
+                negativeBlockIndices[blocks[iblock]->ID()] = negativeIndices;
             }
             negative = COMM->Any(negative);
             if (negative)
             {
                 CONSOLE << "negative quantities detected somewhere, bailing out." << std::endl;
                 bailout = true;
+                WriteNegativeCells("negatives.vtk", negativeBlockIndices, meshScale);
                 //Probe(blocks);
                 break;
             }

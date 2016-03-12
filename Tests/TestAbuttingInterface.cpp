@@ -2,7 +2,7 @@
 
 #include "Communicator.h"
 #include "Block.h"
-#include "AbuttingInterface.h"
+#include "SimplePlanarAbuttingInterface.h"
 #include "PlanarMapping.h"
 #include "Structured.h"
 #include "VTKWriter.h"
@@ -81,7 +81,7 @@ int main(int argc, char** argv)
     AbuttingInterface::BlockPatches patches1, patches2;
     patches1.push_back(patch1);
     patches2.push_back(patch2);
-    AbuttingInterface* interface = AbuttingInterface::New(patches1, patches2);
+    SimplePlanarAbuttingInterface* interface = SimplePlanarAbuttingInterface::New(patches1, patches2);
     interface->SetPatchMesh(1, XYZ1);
     interface->SetPatchMesh(2, XYZ2);
 

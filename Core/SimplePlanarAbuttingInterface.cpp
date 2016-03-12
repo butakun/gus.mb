@@ -17,11 +17,13 @@ SimplePlanarAbuttingInterface::New(const BlockPatches& blockPatches, const Block
 
 SimplePlanarAbuttingInterface::~SimplePlanarAbuttingInterface()
 {
+#if 0
     for (PatchMeshes::iterator i = mPatchMeshes.begin(); i != mPatchMeshes.end(); ++i)
     {
         Structured<double> pxyz = i->second;
         delete[] pxyz.Data;
     }
+#endif
 
     for (Mappings::iterator i = mMappings.begin(); i != mMappings.end(); ++i)
     {
@@ -30,6 +32,7 @@ SimplePlanarAbuttingInterface::~SimplePlanarAbuttingInterface()
     }
 }
 
+#if 0
 SimplePlanarAbuttingInterface::BlockPatches
 SimplePlanarAbuttingInterface::AllBlockPatches() const
 {
@@ -79,19 +82,19 @@ SimplePlanarAbuttingInterface::SetPatchMesh(int blockID, const Structured<double
         o << "AbbuttingInterface: read block " << blockID << " range " << bp.MeshRange() << std::endl;
     }
 }
-
+#endif
 
 void
 SimplePlanarAbuttingInterface::InitializeMapping()
 {
     std::ostream& LOG = Communicator::GetInstance()->Console();
 
-    for (BlockPatches::const_iterator i = mBlockPatches.begin();
-        i != mBlockPatches.end(); ++i)
+    for (BlockPatches::const_iterator i = SelfBlockPatches().begin();
+        i != SelfBlockPatches().end(); ++i)
     {
         const BlockPatch& bp = *i;
-        PatchMeshes::const_iterator ipm = mPatchMeshes.find(bp.UniqueID());
-        assert(ipm != mPatchMeshes.end());
+        PatchMeshes::const_iterator ipm = GetPatchMeshes().find(bp.UniqueID());
+        assert(ipm != GetPatchMeshes().end());
         const Structured<double>& XYZ = ipm->second;
 
         // Make sure there is no mapper created already for this patch.
@@ -121,8 +124,8 @@ SimplePlanarAbuttingInterface::MapMesh(const IterationContext& iteration)
     }
 
     // Visit all the patches one by one, and map against the donor patches.
-    for (BlockPatches::const_iterator i = mBlockPatches.begin();
-        i != mBlockPatches.end(); ++i)
+    for (BlockPatches::const_iterator i = SelfBlockPatches().begin();
+        i != SelfBlockPatches().end(); ++i)
     {
         const BlockPatch& bp = *i;
         Mappings::iterator im = mMappings.find(bp.UniqueID());
@@ -143,8 +146,8 @@ SimplePlanarAbuttingInterface::MapMesh(const IterationContext& iteration)
         // We keep track of how much each block has been rotated.
         // If rotated more than 360deg, we won't bother with that block.
         std::map<int, int> blockAngles;
-        for (BlockPatches::const_iterator j = mDonorBlockPatches.begin();
-            j != mDonorBlockPatches.end(); ++j)
+        for (BlockPatches::const_iterator j = DonorBlockPatches().begin();
+            j != DonorBlockPatches().end(); ++j)
         {
             blockAngles[j->BlockID()] = 0;
         }
@@ -154,12 +157,12 @@ SimplePlanarAbuttingInterface::MapMesh(const IterationContext& iteration)
         for ( ; ; )
         {
             size_t countBlocksDone = 0;
-            for (BlockPatches::const_iterator j = mDonorBlockPatches.begin();
-                j != mDonorBlockPatches.end(); ++j)
+            for (BlockPatches::const_iterator j = DonorBlockPatches().begin();
+                j != DonorBlockPatches().end(); ++j)
             {
                 const BlockPatch& bpd = *j;
                 const VirtualBlock* donorBlock = Roster::GetInstance()->GetBlock(bpd.BlockID());
-                const Structured<double>& XYZD = mPatchMeshes[bpd.UniqueID()];
+                const Structured<double>& XYZD = GetPatchMeshes()[bpd.UniqueID()];
 
                 // Donor block rotation
                 Vector3 angle0d(0.0, 0.0, 0.0);
@@ -192,7 +195,7 @@ SimplePlanarAbuttingInterface::MapMesh(const IterationContext& iteration)
                 allMapped = mapping->AllMapped();
                 blockAngles[bpd.BlockID()] += 1;
             }
-            if (countBlocksDone == mDonorBlockPatches.size())
+            if (countBlocksDone == DonorBlockPatches().size())
             {
                 if (!allMapped)
                 {
@@ -207,16 +210,16 @@ SimplePlanarAbuttingInterface::MapMesh(const IterationContext& iteration)
 void
 SimplePlanarAbuttingInterface::MapData(const Model& model, InterfaceDataAdaptorBase* adaptor) const
 {
-    for (BlockPatches::const_iterator i = mBlockPatches.begin();
-        i != mBlockPatches.end(); ++i)
+    for (BlockPatches::const_iterator i = SelfBlockPatches().begin();
+        i != SelfBlockPatches().end(); ++i)
     {
         const BlockPatch& bp = *i;
         Structured<double>& U = adaptor->GetBlockData(bp.BlockID());
         const PlanarMapping* mapping = mMappings.find(bp.UniqueID())->second;;
         assert(mapping != NULL);
 
-        for (BlockPatches::const_iterator j = mDonorBlockPatches.begin();
-            j != mDonorBlockPatches.end(); ++j)
+        for (BlockPatches::const_iterator j = DonorBlockPatches().begin();
+            j != DonorBlockPatches().end(); ++j)
         {
             const BlockPatch& dbp = *j;
             const Structured<double>& Ud = adaptor->GetBlockPatchData(dbp.UniqueID());
@@ -281,7 +284,7 @@ SimplePlanarAbuttingInterface::DumpMappingResult(std::ostream& o) const
 {
     o << "<VTKFile type=\"PolyData\">" << std::endl;
     o << "  <PolyData>" << std::endl;
-    for (BlockPatches::const_iterator ibp = mBlockPatches.begin(); ibp != mBlockPatches.end(); ++ibp)
+    for (BlockPatches::const_iterator ibp = SelfBlockPatches().begin(); ibp != SelfBlockPatches().end(); ++ibp)
     {
         const BlockPatch& bp = *ibp;
         const PlanarMapping* mapping = mMappings.find(bp.UniqueID())->second;;

@@ -10,14 +10,14 @@ find_library(CGNS_LIBRARY cgns)
 
 if(CGNS_INCLUDE_DIR AND CGNS_LIBRARY)
   set(CGNS_FOUND TRUE)
-  find_package(HDF5)
+  #find_package(HDF5)
 endif(CGNS_INCLUDE_DIR AND CGNS_LIBRARY)
 
 if(CGNS_FOUND)
   set(CGNS_LIBRARIES ${CGNS_LIBRARY} ${HDF5_LIBRARIES})
   message(STATUS "Found CGNS ${CGNS_LIBRARIES}")
   if(HDF5_FOUND)
-  message(STATUS "Found HDF5 ${HDF5_LIBRARIES}")
+    message(STATUS "Found HDF5 ${HDF5_LIBRARIES}")
   endif(HDF5_FOUND)
 endif(CGNS_FOUND)
 

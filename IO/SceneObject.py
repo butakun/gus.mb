@@ -34,19 +34,23 @@ def MakeActors(xyz):
 	grid.SetPoints(points)
 
 	polydataSurface = vtk.vtkStructuredGridGeometryFilter()
-	polydataSurface.SetInput(grid)
+	#polydataSurface.SetInputData(grid)
+	polydataSurface.SetInputData(grid)
 
 	mapperSurface = vtk.vtkPolyDataMapper()
-	mapperSurface.SetInput(polydataSurface.GetOutput())
+	#mapperSurface.SetInputData(polydataSurface.GetOutput())
+	mapperSurface.SetInputConnection(polydataSurface.GetOutputPort())
 
 	actorSurface = vtk.vtkActor()
 	actorSurface.SetMapper(mapperSurface)
 	actorSurface.GetProperty().SetOpacity(0.3)
 
 	polydataOutline = vtk.vtkStructuredGridOutlineFilter()
-	polydataOutline.SetInput(grid)
+	#polydataOutline.SetInputData(grid)
+	polydataOutline.SetInputData(grid)
 	mapperOutline = vtk.vtkPolyDataMapper()
-	mapperOutline.SetInput(polydataOutline.GetOutput())
+	#mapperOutline.SetInputData(polydataOutline.GetOutput())
+	mapperOutline.SetInputConnection(polydataOutline.GetOutputPort())
 
 	actorOutline = vtk.vtkActor()
 	actorOutline.SetMapper(mapperOutline)

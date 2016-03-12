@@ -115,6 +115,8 @@ private:
     IndexIJK mDI3Ghost;
 };
 
+typedef std::vector<BlockPatch> BlockPatches;
+
 inline std::ostream& operator << (std::ostream& o, const BlockPatch& bp)
 {
     return bp.Dump(o);
