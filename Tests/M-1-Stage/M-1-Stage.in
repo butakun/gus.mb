@@ -114,10 +114,8 @@ BCs = [
 	},
 	{
 	"Patches":[
-		Family("Nozzle_HUB"), Family("Nozzle_HUB_UPSTREAM_1"), Family("Nozzle_HUB_DOWNSTREAM_1"),
-		Family("Nozzle_SHROUD"), Family("Nozzle_SHROUD_UPSTREAM_1"), Family("Nozzle_SHROUD_DOWNSTREAM_1"),
-		Family("Rotor1_HUB"), Family("Rotor1_HUB_UPSTREAM_1"), Family("Rotor1_HUB_DOWNSTREAM_1"),
-		Family("Rotor1_SHROUD"), Family("Rotor1_SHROUD_UPSTREAM_1"), Family("Rotor1_SHROUD_DOWNSTREAM_1"),
+		Family("Nozzle_HUB*"), Family("Nozzle_SHROUD*"),
+		Family("Rotor1_HUB*"), Family("Rotor1_SHROUD*"),
 		],
 	"Type":"InviscidWall",
 	},
