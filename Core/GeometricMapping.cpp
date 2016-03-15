@@ -18,7 +18,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "GeometricMapping.h"
-#include "ANN/ANN.h"
+//#include "ANN/ANN.h"
 
 GeometricMapping::GeometricMapping(const BlockPatches& patches1, const BlockPatches& patches2)
 :   mPatches1(patches1), mPatches2(patches2)
