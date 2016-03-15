@@ -5,8 +5,8 @@ include_directories($(CMAKE_CURRENT_SOURCE_DIR) ${Albastru_SOURCE_DIR}/IO)
 find_package(CGNS REQUIRED)
 include_directories(${CGNS_INCLUDE_DIR})
 
-find_package(ANN REQUIRED)
-include_directories(${ANN_INCLUDE_DIR})
+#find_package(ANN REQUIRED)
+#include_directories(${ANN_INCLUDE_DIR})
 
 add_library(Core
 	Structured.cpp
