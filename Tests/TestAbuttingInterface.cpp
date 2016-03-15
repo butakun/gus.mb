@@ -1,3 +1,22 @@
+/*
+    gus.mb, an open source flow solver.
+    Copyright (C) 2016 Hiromasa Kato <hiromasa at gmail.com>
+
+    This file is part of gus.mb.
+
+    gus.mb is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    gus.mb is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 // $Id: TestAbuttingInterface.cpp 257 2012-12-05 07:48:51Z kato $
 
 #include "Communicator.h"
@@ -78,7 +97,7 @@ int main(int argc, char** argv)
     BlockPatch patch2 = BlockPatch::New(2, IndexRange(mr2.Start.I, mr2.Start.J, mr2.Start.K, mr2.Start.I, mr2.End.J, mr2.End.K), 2);
 //    BlockPatch patch1(1, IndexRange(mr1.End.I, mr1.Start.J, mr1.Start.K, mr1.End.I, mr1.End.J, mr1.End.K));
 //    BlockPatch patch2(2, IndexRange(mr2.Start.I, mr2.Start.J, mr2.Start.K, mr2.Start.I, mr2.End.J, mr2.End.K));
-    AbuttingInterface::BlockPatches patches1, patches2;
+    BlockPatches patches1, patches2;
     patches1.push_back(patch1);
     patches2.push_back(patch2);
     SimplePlanarAbuttingInterface* interface = SimplePlanarAbuttingInterface::New(patches1, patches2);
