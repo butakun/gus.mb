@@ -139,6 +139,14 @@ std::ostream& operator << (std::ostream& o, const BlockRange& br)
 
 typedef std::vector<BlockRange> BlockRanges;
 
+void splash(std::ostream& o)
+{
+    o << "gus.mb  Copyright (C) 2016  Hiromasa Kato <hiromasa at gmail.com>" << std::endl
+      << "This program comes with ABSOLUTELY NO WARRANTY." << std::endl
+      << "This is free software, and you are welcome to redistribute it" << std::endl
+      << "under certain conditions." << std::endl;
+}
+
 void
 WriteSolution(const char* filename, Blocks& blocks, const BlockRankMap& blockRankMap)
 {
@@ -541,6 +549,8 @@ void WriteNegativeCells(const char* filename, const std::map<int, std::vector<In
 
 int main(int argc, char** argv)
 {
+    splash(std::cout);
+
     assert(argc > 1);
 
     Communicator::Initialize(&argc, &argv);
