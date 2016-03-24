@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: Solver.cpp 313 2013-12-13 08:50:32Z kato $
 
 #include "Communicator.h"
 #include "Profiler.h"
