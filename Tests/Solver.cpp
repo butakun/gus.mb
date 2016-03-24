@@ -548,14 +548,17 @@ void WriteNegativeCells(const char* filename, const std::map<int, std::vector<In
 
 int main(int argc, char** argv)
 {
-    splash(std::cout);
-
-    assert(argc > 1);
-
     Communicator::Initialize(&argc, &argv);
     Communicator* COMM = Communicator::GetInstance();
     int myrank = COMM->MyRank();
     std::ostream& CONSOLE = COMM->Console();
+
+    if (myrank == 0)
+    {
+        splash(std::cout);
+    }
+
+    assert(argc > 1);
 
     bool probe = false;
     BlockRanges probeRanges;
@@ -1698,7 +1701,7 @@ int main(int argc, char** argv)
             WriteSolutionCGNS(oss.str().c_str(), blocks, blockRankMap, cgnsSt);
         }
 
-        if (unsteady)
+        if (unsteady && iloop % 10 == 0)
         {
             //std::ostringstream oss;
             //oss << "out";
