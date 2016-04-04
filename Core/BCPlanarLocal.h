@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: BCPlanarLocal.h 277 2013-06-04 01:58:51Z kato $
 #ifndef INCLUDED_BC_PLANAR_LOCAL_H__
 #define INCLUDED_BC_PLANAR_LOCAL_H__
 

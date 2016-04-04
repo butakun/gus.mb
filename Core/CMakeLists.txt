@@ -52,7 +52,6 @@ add_library(Core
 	BCPlanarLocal.cpp
 	BCExtrapolate.cpp
 	BCSymmetry.cpp
-	BCInviscidWall.cpp
 	BCViscousWall.cpp
 	BCRotatingViscousWall.cpp
 	BCOutletStaticPressure.cpp
