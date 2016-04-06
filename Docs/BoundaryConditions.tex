@@ -1,0 +1,17 @@
+\section{Boundary Conditions}
+
+\subsection{Inviscid Solid Wall or Symmetry}
+
+Implemented in \texttt{BCSymmetry}. Note that \texttt{BCInviscidWall.h} is not used if you still find it in the repository.
+
+Let $\mathbf{V}_I$, $\mathbf{V}_G$, and $\hat{\mathbf{n}}$ be velocities at the interior and the ghost cells, and the unit outward surface normal of the boundary cell face, respectively. Then,
+\[
+v_n = \mathbf{V}_I \cdot \hat{\mathbf{n}}
+\]
+\[
+v'_n = \max \( 1, \frac{\left|\mathbf{V}_I\right|}{v_n} \) \cdot v_n
+\]
+\[
+\mathbf{V}_G = \mathbf{V}_I - 2 v_n \hat{\mathbf{n}}
+\]
+
