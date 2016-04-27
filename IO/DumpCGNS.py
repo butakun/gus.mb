@@ -25,6 +25,12 @@ def Main(filename):
 
 	f = CGNSFile.CGNSFile(filename)
 
+	print "*** Units ***"
+	print "Mass = ", f.Units["Mass"]
+	print "Length = ", f.Units["Length"]
+	print "Time = ", f.Units["Time"]
+	print "Angle = ", f.Units["Angle"]
+
 	families = f.ReadFamilies()
 	print "*** Families ***"
 	for key, value in families.items():

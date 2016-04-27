@@ -186,6 +186,8 @@ class CGNSFile(object):
 		self.fn = CGNS.Open(filename, mode)
 
 		self.BaseName, cellDim, physDim = CGNS.BaseRead(self.fn, 1)
+		mass, length, time, temp, angle = CGNS.UnitsRead()
+		self.Units = {"Mass":mass, "Length":length, "Time":time, "Angle":angle}
 
 	def ReadZones(self, B = 1):
 
