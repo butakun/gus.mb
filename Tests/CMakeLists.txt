@@ -30,6 +30,9 @@ include_directories(
 add_executable(TestConnectivity1to1 TestConnectivity1to1.cpp)
 target_link_libraries(TestConnectivity1to1 Core IO ${CGNS_LIBRARIES})
 
+add_executable(TestConnectivity1to1Periodicity TestConnectivity1to1Periodicity.cpp)
+target_link_libraries(TestConnectivity1to1Periodicity Core IO ${CGNS_LIBRARIES})
+
 add_executable(TestAbuttingInterface TestAbuttingInterface.cpp)
 target_link_libraries(TestAbuttingInterface Core IO ${CGNS_LIBRARIES})
 
