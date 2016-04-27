@@ -186,8 +186,6 @@ Block::ComputeMetrics()
         RotationalMotion* rbm = dynamic_cast<RotationalMotion*>(GetRigidBodyMotion());
         assert(rbm != NULL);
         Vector3 omega = rbm->AngularVelocity();
-        //Vector3 axis = rbm->Axis();
-        //Vector3 origin = rbm->Origin();
         for (int k = cr.Start.K; k <= cr.End.K; ++k)
         {
             for (int j = cr.Start.J; j <= cr.End.J; ++j)

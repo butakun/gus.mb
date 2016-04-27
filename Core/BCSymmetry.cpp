@@ -45,12 +45,13 @@ BCSymmetry::LocalFunc(
         V = V / UInterior[0];
 
         Vector3 n = Sn / Sn.Mag();
-
+#if 0
         double Vn_ = dot_product(V, n);
         double VmagSq = V.MagSq();
         Vector3 Vn = n * std::max(1.0, std::sqrt(VmagSq / Vn_ * Vn_)) * Vn_;
-
-        //Vector3 Vn = n * dot_product(V, n);
+#else
+        Vector3 Vn = n * dot_product(V, n);
+#endif
 
         Vector3 Vghost = V - 2.0 * Vn;
         UGhost[1] = UGhost[0] * Vghost[0];
