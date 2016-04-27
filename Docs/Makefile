@@ -6,4 +6,4 @@
 
 all::	Scheme.pdf
 
-Scheme.pdf:	Scheme.tex GoverningEquations.tex TurbulenceModels.tex
+Scheme.pdf:	Scheme.tex GoverningEquations.tex TurbulenceModels.tex BoundaryConditions.tex
