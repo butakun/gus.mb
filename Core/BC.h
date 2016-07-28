@@ -34,6 +34,9 @@ public:
     virtual void ApplyTurb(const Block& block, Structured<double>& UT, const Structured<double>& U) = 0;
     virtual void SetMask(Structured<int>& mask) const {}
 
+    virtual void PreIteration() {}
+    virtual void PostIteration() {}
+
     const IndexRange& MeshRange() const { return mMeshRange; }
 
 protected:

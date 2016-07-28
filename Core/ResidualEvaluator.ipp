@@ -17,8 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: ResidualEvaluator.ipp 258 2012-12-26 07:36:54Z kato $
 
+#include "Communicator.h"
 #include "Physics.h"
 #include "SolverFunctions.h"
 #include "Reconstructor.h"
@@ -263,5 +263,23 @@ ResidualEvaluator<N, RECON>::EvaluateResidual(
             }
         }
     }
+
+#if DEBUG
+    std::ostream& LOG = Communicator::GetInstance()->Console();
+    for (int k = cr.Start.K; k <= cr.End.K; ++k)
+    {
+        for (int j = cr.Start.J; j <= cr.End.J; ++j)
+        {
+            for (int i = cr.Start.I; i <= cr.End.I; ++i)
+            {
+                LOG << IndexIJK(i, j, k) << ": ";
+                double* rhs = R(i, j, k);
+                for (int l = 0; l < N; ++l)
+                    LOG << rhs[l] << ' ';
+                LOG << std::endl;
+            }
+        }
+    }
+#endif
 }
 

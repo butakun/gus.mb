@@ -217,8 +217,8 @@ def Main(filename, commsize):
 				zone[key] = value
 
 	# extract boco patch names
-	bocos = mesh.AllBocos()
-	bocoNames = [ patch["Name"] for patch in bocos ]
+	allBocos = mesh.AllBocos()
+	bocoNames = [ patch["Name"] for patch in allBocos ]
 
 	BCs = config["BCs"]
 	for bc in BCs:
@@ -241,6 +241,10 @@ def Main(filename, commsize):
 				zone["BCs"].append(bocoInfo)
 			else:
 				zone["BCs"] = [bocoInfo]
+
+	# assign unique ids to all bocos (FIXME: should assign to connectivities as well?)
+	for i, boco in enumerate(allBocos):
+		boco["UniqueID"] = i + 1;
 
 	if config.has_key("Interfaces"):
 		Interfaces = config["Interfaces"]
@@ -372,13 +376,26 @@ def Main(filename, commsize):
 	for zone in zones:
 		nbocos += len(zone["Bocos"])
 	print nbocos
-	UniqueID = 1
 	for zone in zones:
 		Z = zone["Zone"]
 		for boco in zone["Bocos"]:
 			r = RangeString(boco.CanonicalRange())
-			print "%d %s %d \"%s\""  % (Z, r, UniqueID, boco["Name"])
-			UniqueID += 1
+			print "%d %s %d \"%s\""  % (Z, r, boco["UniqueID"], boco.Path)
+
+	print "# Patch Families"
+	print len(families)
+	for i, family in enumerate(families.items()):
+		familyID = i + 1
+		familyName, familyData = family
+		familyData["ID"] = familyID
+		familyBocoIDs = []
+		for boco in allBocos:
+			if boco.has_key("FamilyName") and boco["FamilyName"] == familyName:
+				familyBocoIDs.append(boco["UniqueID"])
+		if len(familyBocoIDs) == 0:
+			print familyID, " # ", familyName, " (no bocos found)"
+		else:
+			print familyID, reduce(lambda s1, s2: s1 + " " + s2, map(str, familyBocoIDs)), " # ", familyName
 
 	InterfaceDB = {}
 	nextTag = 1
@@ -395,11 +412,13 @@ def Main(filename, commsize):
 		print 0, 0.0, 0.0, 0.0
 		"""
 		bcs = zone["BCs"]
-		print "# BCs (name, type, spec)"
+		print "# BCs (name, family, patch ID, range, type, spec)"
 		print len(bcs)
 		for bc in bcs:
 			boco, bocoType, bocoData = bc
-			bocoName = "%s/%s" % (boco["Zone"]["Name"], boco["Name"])
+			familyID = -1
+			if boco.has_key("FamilyName"):
+				familyID = families[boco["FamilyName"]]["ID"]
 			dataStr = "-1"
 			if bocoType == "InletTotal":
 				dataStr = "%f %f %f %f %f" % tuple(bocoData[0:5])
@@ -414,7 +433,7 @@ def Main(filename, commsize):
 					dataStr = ""
 					for v in bocoData:
 						dataStr += " %f" % v
-			print "\"%s\"\t%s\t%s\t%s  " % (bocoName, RangeString(boco["Range"]), bocoType, dataStr)
+			print "\"%s\"\t%d\t%d\t%s\t%s\t%s  " % (boco.Path, familyID, boco["UniqueID"], RangeString(boco["Range"]), bocoType, dataStr)
 
 		c1to1s = zone["1to1s"]
 		print "# 1-to-1 Connectivities (name, tag, donorZoneID, selfRange, donorRange, transform, periodicity)"

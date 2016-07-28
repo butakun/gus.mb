@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: Roster.h 258 2012-12-26 07:36:54Z kato $
 #ifndef INCLUDE_ROSTER_H__
 #define INCLUDE_ROSTER_H__
 
@@ -33,6 +32,9 @@
 class Roster
 {
 public:
+    typedef std::set<BlockPatch> BlockPatchSet;
+    typedef std::map<int, BlockPatches> BlockPatchesMap;
+
     static Roster* GetInstance();
 
     virtual ~Roster();
@@ -45,6 +47,10 @@ public:
     // BlockPatch database
     const BlockPatch& RegisterBlockPatch(const BlockPatch& bp);
     const BlockPatch& GetBlockPatch(int blockID, const IndexRange& meshRange) const;
+    const BlockPatch& GetBlockPatch(int blockPatchID) const;
+    const BlockPatches& RegisterBlockPatchFamily(int familyID, const BlockPatches& bps);
+    const BlockPatches& GetBlockPatchFamily(int familyID) const;
+    const BlockPatchesMap& BlockPatchFamilies() const { return mBlockPatchFamilies; }
 
     // Interfaces
     void AddInterface(AbuttingInterface* interface);
@@ -77,8 +83,8 @@ private:
     std::map<int, VirtualBlock*> mBlockMap;
 
     // BlockPatches
-    typedef std::set<BlockPatch> BlockPatchSet;
     BlockPatchSet mBlockPatchSet;
+    BlockPatchesMap mBlockPatchFamilies;
 
     // Interfaces
     Interfaces mInterfaces;
@@ -89,7 +95,18 @@ private:
     std::map<int, Structured<double> > mCachedMesh;
     std::map<int, Structured<double> > mBlockPatchMeshes;
 
-    // Data
+    // BC Family data
+    class BCFamilyData
+    {
+    public:
+        int BlockPatchID;
+        double Data;
+        BCFamilyData() : BlockPatchID(0), Data(0.0) {}
+    };
+
+    typedef std::map<int, std::map<std::string, BCFamilyData> > BCFamilyDataMap;
+
+    // Tagged BlockData
     class TaggedBlockDataBase
     {
     public:

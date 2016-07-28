@@ -780,6 +780,34 @@ int main(int argc, char** argv)
             BlockPatch::New(blockID, mr, uniqueID);
         }
 
+        // Block patch families
+        std::getline(f, line); std::getline(f, line);
+        iss.clear(); iss.str(line);
+        int numBlockPatchFamilies;
+        iss >> numBlockPatchFamilies;
+        for (int i = 0; i < numBlockPatchFamilies; ++i)
+        {
+            int familyID, blockPatchID;;
+            BlockPatches blockPatches;
+            std::getline(f, line);
+            iss.clear(); iss.str(line);
+            iss >> familyID;
+            while (iss >> blockPatchID)
+                blockPatches.push_back(Roster::GetInstance()->GetBlockPatch(blockPatchID));
+            Roster::GetInstance()->RegisterBlockPatchFamily(familyID, blockPatches);
+        }
+        const Roster::BlockPatchesMap& bpFams = Roster::GetInstance()->BlockPatchFamilies();
+        for (Roster::BlockPatchesMap::const_iterator i = bpFams.begin(); i != bpFams.end(); ++i)
+        {
+            int fam = i->first;
+            const BlockPatches& bps = i->second;
+            CONSOLE << "Patch Family " << fam << std::endl;
+            for (BlockPatches::const_iterator j = bps.begin(); j != bps.end(); ++j)
+            {
+                CONSOLE << "    " << *j << std::endl;
+            }
+        }
+
         // Read mesh
         for (BlockRankMap::iterator i = blockRankMap.begin(); i != blockRankMap.end(); ++i)
         {
@@ -918,10 +946,16 @@ int main(int argc, char** argv)
 
                 iss.clear(); iss.str(line);
 
+                // Family ID and Patch ID
+                int familyID, bpID;
+                iss >> familyID >> bpID;
+
                 // Range
                 int r[6];
                 iss >> r[0] >> r[1] >> r[2] >> r[3] >> r[4] >> r[5];
                 IndexRange range(r[0], r[1], r[2], r[3], r[4], r[5]);
+                const BlockPatch& bcbp = Roster::GetInstance()->GetBlockPatch(bdef.BlockID, range);
+                CONSOLE << "DEBUG: " << name << " " << range << " is BlockPatch " << bcbp.UniqueID() << " " << bcbp.MeshRange() << std::endl;
 
                 // Type
                 iss >> type;

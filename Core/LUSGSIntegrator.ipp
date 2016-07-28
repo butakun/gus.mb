@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: LUSGSIntegrator.ipp 301 2013-09-28 11:19:40Z kato $
 
 #include "Vector3.h"
 #include <cmath>

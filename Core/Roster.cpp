@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: Roster.cpp 306 2013-10-02 07:03:25Z kato $
 
 #include "Roster.h"
 #include "Block.h"
@@ -84,6 +83,31 @@ Roster::GetBlockPatch(int blockID, const IndexRange& meshRange) const
     BlockPatchSet::const_iterator i = mBlockPatchSet.find(bp);
     assert(i != mBlockPatchSet.end());
     return *i;
+}
+
+const BlockPatch&
+Roster::GetBlockPatch(int blockPatchID) const
+{
+    for (BlockPatchSet::const_iterator i = mBlockPatchSet.begin();
+        i != mBlockPatchSet.end(); ++i)
+    {
+        if (i->UniqueID() == blockPatchID)
+            return *i;
+    }
+    assert(false);
+}
+
+const BlockPatches&
+Roster::RegisterBlockPatchFamily(int familyID, const BlockPatches& bps)
+{
+    assert(mBlockPatchFamilies.find(familyID) == mBlockPatchFamilies.end());
+    return mBlockPatchFamilies[familyID] = bps;
+}
+
+const BlockPatches&
+Roster::GetBlockPatchFamily(int familyID) const
+{
+    return mBlockPatchFamilies.at(familyID);
 }
 
 void
