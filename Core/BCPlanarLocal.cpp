@@ -29,31 +29,38 @@ BCPlanarLocal::Apply(const Block& block, Structured<double>& U)
     Structured<double> surface = Surface(block);
 
     IndexIJK dGhost(0, 0, 0), dInterior(0, 0, 0), deltaInterior(0, 0, 0);
+    double SnDir = 1.0;
     switch (PatchDirection())
     {
     case I:
         dInterior.I = 1;
         deltaInterior.I = 1;
+        SnDir = 1.0;
         break;
     case INEG:
         dGhost.I = 1;
         deltaInterior.I = -1;
+        SnDir = -1.0;
         break;
     case J:
         dInterior.J = 1;
         deltaInterior.J = 1;
+        SnDir = 1.0;
         break;
     case JNEG:
         dGhost.J = 1;
         deltaInterior.J = -1;
+        SnDir = -1.0;
         break;
     case K:
         dInterior.K = 1;
         deltaInterior.K = 1;
+        SnDir = 1.0;
         break;
     case KNEG:
         dGhost.K = 1;
         deltaInterior.K = -1;
+        SnDir = -1.0;
         break;
     default:
         assert(false);
@@ -69,7 +76,7 @@ BCPlanarLocal::Apply(const Block& block, Structured<double>& U)
                 IndexIJK iGhost = iFace + dGhost;
                 IndexIJK iInterior = iFace + dInterior;
 
-                Vector3 Sn(surface(iFace));
+                Vector3 Sn = SnDir * Vector3(surface(iFace));
 
                 LocalFunc(iFace, iGhost, iInterior, deltaInterior, Sn, U, block);
             }

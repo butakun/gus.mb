@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: BCOutletStaticPressure.h 277 2013-06-04 01:58:51Z kato $
 #ifndef INCLUDE_BC_OUTLET_STATIC_PRESSURE_H__
 #define INCLUDE_BC_OUTLET_STATIC_PRESSURE_H__
 

@@ -43,7 +43,6 @@ BCOutletStaticPressure::LocalFunc(
     double gamma;
     gamma = Physics::GetInstance()->Gamma();
 
-    //double* Ri = block.Radius()(iInterior);
     double* Rg = block.Radius()(iGhost);
 
     double rhoGhost, uGhost, vGhost, wGhost, pGhost, rhoke, rhoetGhost;

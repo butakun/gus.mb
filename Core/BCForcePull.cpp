@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: BCForcePull.cpp 306 2013-10-02 07:03:25Z kato $
 
 #include "Communicator.h"
 #include "BCForcePull.h"
@@ -38,15 +37,11 @@ BCForcePull::LocalFunc(
 {
     double* Ui = U(iInterior);
 
-    //double gamma;
-    //gamma = Physics::GetInstance()->Gamma();
-
     double* Ri = block.Radius()(iInterior);
-    //double* Rg = block.Radius()(iGhost);
 
     double vesqI, rhoetGhost, rhoVMagGhost;
-    vesqI     = Ri[3]; // entrainment velocity squared at interior cell
-    rhoetGhost = Ui[4] + 0.5 * Ui[0] * vesqI;
+    vesqI        = Ri[3]; // entrainment velocity squared at interior cell
+    rhoetGhost   = Ui[4] + 0.5 * Ui[0] * vesqI;
     rhoVMagGhost = std::sqrt(Ui[1] * Ui[1] + Ui[2] * Ui[2] + Ui[3] * Ui[3]);
 
     Vector3 nv = -Sn;
