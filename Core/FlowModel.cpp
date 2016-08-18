@@ -121,15 +121,14 @@ FlowModel::ScalarCoeff(double* Ui, double* Uj, double* Sij, double SijSign, doub
 
 void Flux(double* H, double* U, double* Sn, double SnSign, double SnAbs, double* Radius, double gamma)
 {
-    double rho, u, v, w, Vn, p, romegaSq, ker;
+    double rho, u, v, w, Vn, p, romegaSq;
     rho = U[0];
     u = U[1] / rho;
     v = U[2] / rho;
     w = U[3] / rho;
     Vn = SnSign * (Sn[0] * u + Sn[1] * v + Sn[2] * w);
     romegaSq = Radius[3];
-    ker = 0.5 * romegaSq;
-    p = (gamma - 1.0) * (U[4] - 0.5 * rho * (u * u + v * v + w * w) + 0.5 * rho * ker);
+    p = (gamma - 1.0) * (U[4] - 0.5 * rho * (u * u + v * v + w * w) + 0.5 * rho * romegaSq);
 
     H[0] = rho * Vn;
     H[1] = rho * Vn * u + SnAbs * p;

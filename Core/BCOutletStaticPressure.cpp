@@ -44,15 +44,36 @@ BCOutletStaticPressure::LocalFunc(
     gamma = Physics::GetInstance()->Gamma();
 
     double* Rg = block.Radius()(iGhost);
+    double* Ri = block.Radius()(iInterior);
 
+    // Ghost cell quantities
     double rhoGhost, uGhost, vGhost, wGhost, pGhost, rhoke, rhoetGhost;
     double romegaSq, rhoker;
     rhoGhost = Ui[0];
     uGhost = Ui[1] / Ui[0];
     vGhost = Ui[2] / Ui[0];
     wGhost = Ui[3] / Ui[0];
-    pGhost = mStaticPressure;
     romegaSq = Rg[3];
+
+    // Interior cell quantities
+    double rhoi, ui, vi, wi, romegaSqi, pi, vni;
+    rhoi = Ui[0];
+    ui = Ui[1] / Ui[0];
+    vi = Ui[2] / Ui[0];
+    wi = Ui[3] / Ui[0];
+    romegaSqi = Ri[3];
+    pi = (gamma - 1.0) * (Ui[4] - 0.5 * rhoi * (ui * ui + vi * vi + wi * wi) + 0.5 * rhoi * romegaSqi);
+    vni = Sn.X() * ui + Sn.Y() * vi + Sn.Z() * wi; // velocity component normal to boundary face, positive means inward (ghost to interior).
+    if (vni > 0.0)
+    {
+        // this indicates flow reversal, so we apply lower static pressure on the ghost cell
+        pGhost = 0.9 * pi;
+    }
+    else
+    {
+        pGhost = std::min(1.1 * pi, mStaticPressure);
+    }
+
     rhoker = 0.5 * rhoGhost * romegaSq;
     rhoke = 0.5 * rhoGhost * (uGhost * uGhost + vGhost * vGhost + wGhost * wGhost);
     rhoetGhost = pGhost / (gamma - 1.0) + rhoke - rhoker;
