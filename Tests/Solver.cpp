@@ -934,6 +934,7 @@ int main(int argc, char** argv)
             for (int ibc = 0; ibc < numBCs; ++ibc)
             {
                 std::string name, type;
+                std::string strData;
                 double data[5];
                 TurbulenceSpec* turbSpec = NULL;
                 std::getline(f, line);
@@ -964,13 +965,13 @@ int main(int argc, char** argv)
                     iss >> data[0] >> data[1] >> data[2] >> data[3] >> data[4];
                     turbSpec = ReadTurbulenceSpec(iss);
                 }
-                else if (type == "ViscousWall" || type == "OutletStaticPressure")
+                else if (type == "OutletStaticPressure")
                 {
                     iss >> data[0];
                 }
-                else if (type == "RotatingViscousWall")
+                else if (type == "ViscousWall")
                 {
-                    iss >> data[0] >> data[1] >> data[2] >> data[3]; // Twall, omegaX, omegaY, omegaZ
+                    iss >> strData >> data[0];
                 }
                 else if (type == "InletTotal")
                 {
@@ -997,7 +998,8 @@ int main(int argc, char** argv)
                 }
                 else if (type == "ViscousWall")
                 {
-                    bc = new BCViscousWall(range, dir, data[0]);
+                    bool isStationary = strData == "Stationary";
+                    bc = new BCViscousWall(range, dir, isStationary, data[0]);
                 }
                 else if (type == "RotatingViscousWall")
                 {
