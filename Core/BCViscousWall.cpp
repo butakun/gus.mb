@@ -17,14 +17,15 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: BCViscousWall.cpp 277 2013-06-04 01:58:51Z kato $
 
 #include "BCViscousWall.h"
+#include "RigidBodyMotion.h"
 #include "Physics.h"
 #include "Vector3.h"
 
-BCViscousWall::BCViscousWall(const IndexRange& meshRange, Direction dir, double TWall)
+BCViscousWall::BCViscousWall(const IndexRange& meshRange, Direction dir, bool isStationary, double TWall)
 :   BCPlanarLocal(meshRange, dir),
+    mIsStationary(isStationary),
     mTWall(TWall / Physics::GetInstance()->TRef())
 {
     if (TWall < 0.0)
@@ -57,12 +58,23 @@ BCViscousWall::LocalFunc(
     pi = (gamma - 1.0) * (Ui[4] - 0.5 * (Ui[1] * Ui[1] + Ui[2] * Ui[2] + Ui[3] * Ui[3]) / Ui[0] + rhokeri);
     Ti = pi / Ui[0];
 
+    Vector3 velWall(0.0, 0.0, 0.0);
+    if (mIsStationary && !block.IsStationary())
+    {
+        RigidBodyMotion* rbm = block.GetRigidBodyMotion();
+        RotationalMotion* rm = dynamic_cast<RotationalMotion*>(rbm);
+        assert(rm != NULL);
+        Vector3 pC(Ri[0], Ri[1], Ri[2]); //FIXME Ri or Rg, which one? think about romegaSqg down below too, these two must be consistently treated, no?
+        Vector3 ve = rm->EntrainmentVelocityAt(pC);
+        velWall = -ve;
+    }
+
     double rhoGhost, uGhost, vGhost, wGhost, TGhost, pGhost, rhoetGhost;
     double romegaSqg, rhokerg;
     rhoGhost = Ui[0];
-    uGhost = -Ui[1] / Ui[0];
-    vGhost = -Ui[2] / Ui[0];
-    wGhost = -Ui[3] / Ui[0];
+    uGhost = 2.0 * velWall.X() - Ui[1] / Ui[0];
+    vGhost = 2.0 * velWall.Y() - Ui[2] / Ui[0];
+    wGhost = 2.0 * velWall.Z() - Ui[3] / Ui[0];
     if (mTWall < 0.0)
         TGhost = Ti;
     else

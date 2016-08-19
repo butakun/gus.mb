@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: BCViscousWall.h 277 2013-06-04 01:58:51Z kato $
 #ifndef INCLUDED_BC_VISCOUS_WALL_H__
 #define INCLUDED_BC_VISCOUS_WALL_H__
 
@@ -47,7 +46,7 @@ private:
 class BCViscousWall : public BCPlanarLocal
 {
 public:
-    BCViscousWall(const IndexRange& meshRange, Direction direction, double TWall = -1.0);
+    BCViscousWall(const IndexRange& meshRange, Direction direction, bool isStationary = false, double TWall = -1.0);
     virtual ~BCViscousWall() {}
 
     virtual void SetMask(Structured<int>& mask) const;
@@ -71,6 +70,7 @@ protected:
         );
 
 private:
+    bool mIsStationary;
     double mTWall;
 };
 

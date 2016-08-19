@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: RigidBodyMotion.h 250 2012-07-20 01:52:56Z kato $
 #ifndef INCLUDED_RIGID_BODY_MOTION_H__
 #define INCLUDED_RIGID_BODY_MOTION_H__
 
