@@ -936,6 +936,7 @@ int main(int argc, char** argv)
                 std::string name, type;
                 std::string strData;
                 double data[5];
+                int idata;
                 TurbulenceSpec* turbSpec = NULL;
                 std::getline(f, line);
 
@@ -967,7 +968,7 @@ int main(int argc, char** argv)
                 }
                 else if (type == "OutletStaticPressure")
                 {
-                    iss >> data[0];
+                    iss >> data[0] >> idata;
                 }
                 else if (type == "ViscousWall")
                 {
@@ -1007,7 +1008,7 @@ int main(int argc, char** argv)
                 }
                 else if (type == "OutletStaticPressure")
                 {
-                    bc = new BCOutletStaticPressure(range, dir, data[0]);
+                    bc = new BCOutletStaticPressure(range, dir, data[0], idata != 0);
                 }
                 else if (type == "InletTotal")
                 {

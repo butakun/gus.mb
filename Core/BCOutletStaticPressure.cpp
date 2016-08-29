@@ -17,18 +17,20 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: BCOutletStaticPressure.cpp 277 2013-06-04 01:58:51Z kato $
 
 #include "Communicator.h"
 #include "BCOutletStaticPressure.h"
 #include "Physics.h"
 
-BCOutletStaticPressure::BCOutletStaticPressure(const IndexRange& meshRange, Direction direction, double pressure)
+BCOutletStaticPressure::BCOutletStaticPressure(const IndexRange& meshRange, Direction direction, double pressure, bool forcePressure)
 :   BCPlanarLocal(meshRange, direction),
-    mStaticPressure(pressure / Physics::GetInstance()->PRef())
+    mStaticPressure(pressure / Physics::GetInstance()->PRef()),
+    mForcePressure(forcePressure)
 {
-    Communicator::GetInstance()->Console() << "BCOutletStaticPressure: p(nondim) = " << mStaticPressure << ", PRef = " << Physics::GetInstance()->PRef() << std::endl;
-    std::cout << "BCOutletStaticPressure: p(nondim) = " << mStaticPressure << ", PRef = " << Physics::GetInstance()->PRef() << std::endl;
+    Communicator::GetInstance()->Console()
+        << "BCOutletStaticPressure: p(nondim) = " << mStaticPressure
+        << ", PRef = " << Physics::GetInstance()->PRef()
+        << ", Force = " << mForcePressure << std::endl;
 }
 
 void
@@ -64,7 +66,7 @@ BCOutletStaticPressure::LocalFunc(
     romegaSqi = Ri[3];
     pi = (gamma - 1.0) * (Ui[4] - 0.5 * rhoi * (ui * ui + vi * vi + wi * wi) + 0.5 * rhoi * romegaSqi);
     vni = Sn.X() * ui + Sn.Y() * vi + Sn.Z() * wi; // velocity component normal to boundary face, positive means inward (ghost to interior).
-    if (vni > 0.0)
+    if (!mForcePressure && vni > 0.0)
     {
         // this indicates flow reversal, so we apply lower static pressure on the ghost cell
         pGhost = 0.9 * pi;

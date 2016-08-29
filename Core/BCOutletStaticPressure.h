@@ -25,7 +25,7 @@
 class BCOutletStaticPressure : public BCPlanarLocal
 {
 public:
-    BCOutletStaticPressure(const IndexRange& meshRange, Direction direction, double pressure);
+    BCOutletStaticPressure(const IndexRange& meshRange, Direction direction, double pressure, bool forcePressure = false);
     virtual ~BCOutletStaticPressure() {}
 
 protected:
@@ -43,6 +43,7 @@ protected:
 
 private:
     double mStaticPressure;
+    bool mForcePressure;
 };
 
 #endif // INCLUDE_BC_OUTLET_STATIC_PRESSURE_H__

@@ -430,6 +430,8 @@ def Main(filename, commsize):
 				dataStr += " %s" % TurbulenceSpecString(turbSpec)
 			elif bocoType == "ViscousWall":
 				dataStr = "%s %f" % (bocoData[0], bocoData[1])
+			elif bocoType == "OutletStaticPressure":
+				dataStr = "%f %d" % (bocoData[0], bocoData[1])
 			else:
 				if bocoData:
 					dataStr = ""
