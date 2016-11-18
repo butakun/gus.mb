@@ -181,7 +181,6 @@ Block::ComputeMetrics()
     // Radial positions of the cells
     if (IsRotating())
     {
-        double vRef = Physics::GetInstance()->VRef();
         RotationalMotion* rbm = dynamic_cast<RotationalMotion*>(GetRigidBodyMotion());
         assert(rbm != NULL);
         Vector3 omega = rbm->AngularVelocity();
@@ -201,7 +200,7 @@ Block::ComputeMetrics()
                     Vector3 p8(xyz(i - 1, j    , k    ));
                     Vector3 pC = 0.125 * (p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8);
                     Vector3 vR = rbm->RadialVector(pC);
-                    Vector3 omegaR = cross_product(omega, vR) / vRef;
+                    Vector3 omegaR = cross_product(omega, vR);
                     mRadius(i, j, k)[0] = pC.X();
                     mRadius(i, j, k)[1] = pC.Y();
                     mRadius(i, j, k)[2] = pC.Z();

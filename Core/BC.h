@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: BC.h 277 2013-06-04 01:58:51Z kato $
 #ifndef INCLUDED_BC_H__
 #define INCLUDED_BC_H__
 
@@ -34,8 +33,10 @@ public:
     virtual void ApplyTurb(const Block& block, Structured<double>& UT, const Structured<double>& U) = 0;
     virtual void SetMask(Structured<int>& mask) const {}
 
-    virtual void PreIteration() {}
-    virtual void PostIteration() {}
+    virtual void PreIterationStart() {}
+    virtual void PreIterationFinish() {}
+    virtual void PostIterationStart() {}
+    virtual void PostIterationFinish() {}
 
     const IndexRange& MeshRange() const { return mMeshRange; }
 

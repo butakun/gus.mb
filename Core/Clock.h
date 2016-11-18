@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: Clock.h 41 2010-07-06 10:48:07Z kato $
 #ifndef INCLUDED_CLOCK_H__
 #define INCLUDED_CLOCK_H__
 

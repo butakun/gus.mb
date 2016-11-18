@@ -239,7 +239,8 @@ ResidualEvaluator<N, RECON>::EvaluateResidual(
         Vector3 omega = rm->AngularVelocity();
 
         const Physics* PHYS = Physics::GetInstance();
-        double Fref = PHYS->VRef() * PHYS->VRef() / PHYS->LRef();
+        //double Fref = PHYS->VRef() * PHYS->VRef() / PHYS->LRef();
+        double Fref = 1.0;
 
         for (int k = cr.Start.K; k <= cr.End.K; ++k)
         {
@@ -256,9 +257,9 @@ ResidualEvaluator<N, RECON>::EvaluateResidual(
                     Vector3 v(UU[1] / rho, UU[2] / rho , UU[3] / rho);
                     Vector3 Fcentrifugal = -cross_product(omega, cross_product(omega, r));
                     Vector3 Fcoriolis = -2.0 * cross_product(omega, v);
-                    rhs[1] += vol * rho / Fref * (Fcentrifugal.X() + Fcoriolis.X());
-                    rhs[2] += vol * rho / Fref * (Fcentrifugal.Y() + Fcoriolis.Y());
-                    rhs[3] += vol * rho / Fref * (Fcentrifugal.Z() + Fcoriolis.Z());
+                    rhs[1] -= vol * rho / Fref * (Fcentrifugal.X() + Fcoriolis.X());
+                    rhs[2] -= vol * rho / Fref * (Fcentrifugal.Y() + Fcoriolis.Y());
+                    rhs[3] -= vol * rho / Fref * (Fcentrifugal.Z() + Fcoriolis.Z());
                 }
             }
         }

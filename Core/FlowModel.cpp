@@ -247,7 +247,7 @@ FlowModel::FromLocalToGlobal(double* UGlobal, double* ULocal, const Block& block
     Vector3 vl(ULocal[1] / rho, ULocal[2] / rho, ULocal[3] / rho);
     Vector3 vg = vl + ve;
 
-    double rhoe = ULocal[4] - 0.5 * rho * vl.MagSq() + 0.5 * romegaSq;
+    double rhoe = ULocal[4] - 0.5 * rho * vl.MagSq() + 0.5 * rho * romegaSq;
     double rhoetGlobal = rhoe + 0.5 * rho * vg.MagSq();
 
     UGlobal[0] = rho;

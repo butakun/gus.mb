@@ -17,11 +17,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: Physics.h 277 2013-06-04 01:58:51Z kato $
 #ifndef INCLUDED_PHYSICS_H__
 #define INCLUDED_PHYSICS_H__
 
 #include "Sutherland.h"
+#include <iostream>
 
 /*
 Nondimensionalization:
@@ -92,6 +92,8 @@ private:
 
     Sutherland mViscosityModel;
 };
+
+std::ostream& operator << (std::ostream& o, const Physics& phys);
 
 #endif // INCLUDED_PHYSICS_H__
 

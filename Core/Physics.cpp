@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: Physics.cpp 255 2012-12-05 07:47:00Z kato $
 
 #include "Physics.h"
 #include <cstddef>
@@ -51,3 +50,22 @@ Physics::Physics(double gamma, double rhoRef, double TRef, double RGAS)
     mMuRef = mViscosityModel.ViscosityDimensional(TRef);
 }
 
+std::ostream& operator << (std::ostream& o, const Physics& phys)
+{
+    o
+    << "Specific gas constant (R) = " << phys.RGAS() << std::endl
+    << "Ratio of specific heats (gamma) = " << phys.Gamma() << std::endl
+    << "Prandtl number = " << phys.PrandtlNumber() << std::endl
+    << "Reference quantities: " << std::endl
+    << "  Length (m) = " << phys.LRef() << std::endl
+    << "  Time (s) = " << phys.TimeRef() << std::endl
+    << "  Density (kg/m^3) = " << phys.RhoRef() << std::endl
+    << "  Temperature (K) = " << phys.TRef() << std::endl
+    << "  Pressure (Pa) = " << phys.PRef() << std::endl
+    << "  Velocity (m/s) = " << phys.VRef() << std::endl
+    << "  Energy (J/kg) = " << phys.ERef() << std::endl
+    << "  Viscosity (?) = " << phys.MuRef() << std::endl
+    << "Reynolds number = " << phys.ReynoldsNumber() << std::endl;
+
+    return o;
+}

@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: RoeFluxEvaluator.ipp 60 2010-09-01 16:15:57Z kato $
 
 inline
 RoeFluxEvaluator::RoeFluxEvaluator(double epsEntropyFix)

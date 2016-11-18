@@ -63,9 +63,11 @@ private:
 class RotationalMotion : public RigidBodyMotion
 {
 public:
-    RotationalMotion(const Vector3& origin, const Vector3& angularVelocity)
-    : mOrigin(origin), mAngularVelocity(angularVelocity)
+    RotationalMotion(const Vector3& origin, const Vector3& angularVelocityDim)
+    : mOrigin(origin)
     {
+        // angular velocity (rad/sec) nondimensionalized.
+        mAngularVelocity = angularVelocityDim * Physics::GetInstance()->TimeRef();
         Initialize();
     }
 
@@ -111,7 +113,7 @@ public:
     Vector3 EntrainmentVelocityAt(const Vector3& pC) const
     {
         Vector3 vOC = pC - mOrigin;
-        Vector3 v = cross_product(mAngularVelocity, vOC) / mVRef;
+        Vector3 v = cross_product(mAngularVelocity, vOC);
         return v;
     }
 
@@ -126,7 +128,6 @@ protected:
         mAxis = mAngularVelocity.Normalized();
         mOmega = mAngularVelocity.Mag();
         assert(mOmega > 0.0);
-        mVRef = Physics::GetInstance()->VRef();
     }
 
 private:
@@ -134,7 +135,6 @@ private:
     Vector3 mAngularVelocity;
     Vector3 mAxis;
     double mOmega;
-    double mVRef; // cached copy of Physics::VRef
 };
 
 #endif // INCLUDED_RIGID_BODY_MOTION_H__
