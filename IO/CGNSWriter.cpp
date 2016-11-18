@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: CGNSWriter.cpp 321 2014-08-26 09:52:44Z kato $
 
 #include "CGNSWriter.h"
 #include "CGNSReader.h"
@@ -55,7 +54,7 @@ CGNSWriter::~CGNSWriter()
 }
 
 void
-CGNSWriter::WriteStructure(const CGNSStructure& s)
+CGNSWriter::WriteStructure(const CGNSStructure& s, const Physics& phys)
 {
     int err;
 
@@ -102,8 +101,8 @@ CGNSWriter::WriteStructure(const CGNSStructure& s)
                     err = CGNS::cg_gopath(fn, oss.str().c_str());
                     cgns_assert(err);
 
-                    Vector3 o = rm->Origin();
-                    Vector3 omega = rm->AngularVelocity();
+                    Vector3 o = rm->Origin() * phys.LRef();
+                    Vector3 omega = rm->AngularVelocity() / phys.TimeRef();
                     double origin[6];
                     origin[0] = o.X(); origin[1] = o.Y(); origin[2] = o.Z();
                     origin[3] = o.X(); origin[4] = o.Y(); origin[5] = o.Z();

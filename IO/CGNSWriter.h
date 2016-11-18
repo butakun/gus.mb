@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: CGNSWriter.h 294 2013-08-23 14:11:39Z kato $
 #ifndef INCLUDE_CGNS_WRITER_H__
 #define INCLUDE_CGNS_WRITER_H__
 
@@ -34,7 +33,7 @@ public:
     CGNSWriter(const char* filename, bool modify = true);
     ~CGNSWriter();
 
-    void WriteStructure(const CGNSStructure& s);
+    void WriteStructure(const CGNSStructure& s, const Physics& phys);
     void WriteFlowSolution(int zone, const Block& block, const Structured<double>& U, const Physics& phys);
     void WriteTurbulenceSolution(int zone, const Block& block, const Structured<double>& U, const Structured<double>& UT, const Physics& phys, const std::string& model);
 

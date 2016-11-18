@@ -15,7 +15,6 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# $Id: ExportToVTK.py 308 2013-10-02 10:08:55Z kato $
 
 import CGNSFile
 import numpy as np
