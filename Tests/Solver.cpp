@@ -375,7 +375,7 @@ void WriteSolutionCGNS(const char* solutionStem, const Blocks& blocks, const Blo
     if (COMM->MyRank() == 0)
     {
         CGNSWriter* writer = new CGNSWriter(solutionFileName.c_str(), false);
-        writer->WriteStructure(cgnsStruct);
+        writer->WriteStructure(cgnsStruct, *Physics::GetInstance());
         delete writer; // deleting means closing the file.
     }
     COMM->Barrier();
@@ -620,7 +620,8 @@ int main(int argc, char** argv)
         double gamma, rhoRef, TRef, RGAS;
         iss >> gamma >> rhoRef >> TRef >> RGAS;
         Physics::Initialize(gamma, rhoRef, TRef, RGAS);
-        std::cout << "Reynolds Number (based on reference acoustic speed) = " << Physics::GetInstance()->ReynoldsNumber() << std::endl;
+        std::cout << *Physics::GetInstance() << std::endl;
+        CONSOLE << *Physics::GetInstance() << std::endl;
 
         // Time advancement
         std::getline(f, line); std::getline(f, line);
