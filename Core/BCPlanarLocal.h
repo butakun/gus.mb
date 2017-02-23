@@ -59,36 +59,9 @@ BCPlanarLocal::Apply(const Block& block, F& f)
     IndexRange faceRange = MetricRange();
     Structured<double> surface = Surface(block);
 
-    IndexIJK dGhost(0, 0, 0), dInterior(0, 0, 0), deltaInterior(0, 0, 0);
-    switch (PatchDirection())
-    {
-    case I:
-        dInterior.I = 1;
-        deltaInterior.I = 1;
-        break;
-    case INEG:
-        dGhost.I = 1;
-        deltaInterior.I = -1;
-        break;
-    case J:
-        dInterior.J = 1;
-        deltaInterior.J = 1;
-        break;
-    case JNEG:
-        dGhost.J = 1;
-        deltaInterior.J = -1;
-        break;
-    case K:
-        dInterior.K = 1;
-        deltaInterior.K = 1;
-        break;
-    case KNEG:
-        dGhost.K = 1;
-        deltaInterior.K = -1;
-        break;
-    default:
-        assert(false);
-    }
+    IndexIJK dGhost = DGhost();
+    IndexIJK dInterior = DInterior();
+    IndexIJK deltaInterior = DeltaInterior();
 
     for (int k = faceRange.Start.K; k <= faceRange.End.K; ++k)
     {

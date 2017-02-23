@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: FlowModel.h 284 2013-06-14 03:22:13Z kato $
 #ifndef INCLUDED_FLOW_MODEL_H__
 #define INCLUDED_FLOW_MODEL_H__
 
@@ -36,6 +35,7 @@ public:
 
     FlowModel();
 
+    virtual const char* Name() const { return "CompressibleFlow"; }
     int DOF() const { return 5; }
 
     Structured<double>& GetU(Block& block) const { return block.U(); }

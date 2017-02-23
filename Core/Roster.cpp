@@ -21,6 +21,7 @@
 #include "Roster.h"
 #include "Block.h"
 #include "Communicator.h"
+#include "BC.h"
 #include "CGNSReader.h"
 #include <algorithm>
 #include <cassert>
@@ -110,6 +111,75 @@ Roster::GetBlockPatchFamily(int familyID) const
     return mBlockPatchFamilies.at(familyID);
 }
 
+const char* MODELNAME = "CompressibleConservativeTwoEqTurb"; // FIXME: temporary
+
+void
+Roster::RegisterBC(int blockID, const Model* model, BC* bc)
+{
+#if 0
+    mModelBlockBCs[model->Name()][blockID].push_back(bc);
+#else
+    mModelBlockBCs[MODELNAME][blockID].push_back(bc);
+#endif
+}
+
+const std::vector<BC*>&
+Roster::GetBCs(int blockID, const Model* model) const
+{
+    return mModelBlockBCs.find(MODELNAME)->second.find(blockID)->second;
+}
+
+void
+Roster::ApplyBCs(const Model* model)
+{
+#if 0
+    assert(mModelBlockBCs.find(model->Name()) != mModelBlockBCs.end());
+    BlockBCs blockBCs = mModelBlockBCs[model->Name()];
+#else
+    assert(mModelBlockBCs.find(MODELNAME) != mModelBlockBCs.end());
+    BlockBCs blockBCs = mModelBlockBCs[MODELNAME];
+#endif
+
+    for (BlockBCs::iterator i = blockBCs.begin(); i != blockBCs.end(); ++i)
+    {
+        int blockID = i->first;
+        BCs bcs = i->second;
+        Block* block = dynamic_cast<Block*>(GetBlock(blockID));
+        assert(block != NULL);
+        for (BCs::iterator j = bcs.begin(); j != bcs.end(); ++j)
+        {
+            (*j)->Apply(*block, block->U());
+        }
+        block->FillCornerGhosts();
+    }
+}
+
+void
+Roster::ApplyTurbBCs(const Model* model)
+{
+#if 0
+    assert(mModelBlockBCs.find(model->Name()) != mModelBlockBCs.end());
+    BlockBCs blockBCs = mModelBlockBCs[model->Name()];
+#else
+    assert(mModelBlockBCs.find(MODELNAME) != mModelBlockBCs.end());
+    BlockBCs blockBCs = mModelBlockBCs[MODELNAME];
+#endif
+
+    for (BlockBCs::iterator i = blockBCs.begin(); i != blockBCs.end(); ++i)
+    {
+        int blockID = i->first;
+        BCs bcs = i->second;
+        Block* block = dynamic_cast<Block*>(GetBlock(blockID));
+        assert(block != NULL);
+        for (BCs::iterator j = bcs.begin(); j != bcs.end(); ++j)
+        {
+            (*j)->ApplyTurb(*block, block->UT(), block->U());
+        }
+        block->FillCornerGhosts();
+    }
+}
+
+
 void
 Roster::AddInterface(AbuttingInterface* interface)
 {
@@ -143,6 +213,7 @@ Roster::GetMeshForBlock(int blockID)
     return mCachedMesh[blockID];
 }
 
+#if 0
 const Structured<double>&
 Roster::GetMeshForBlockPatch(const BlockPatch& bp)
 {
@@ -152,6 +223,7 @@ Roster::GetMeshForBlockPatch(const BlockPatch& bp)
         assert(false); // FIXME
     }
 }
+#endif
 
 void
 Roster::ReleaseCachedMesh()

@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: TestConnectivity1to1.cpp 160 2011-12-01 09:53:17Z kato $
 
 #include "Communicator.h"
 #include "Physics.h"
@@ -26,6 +25,7 @@
 #include "RectMesh.h"
 #include "Connectivity1to1.h"
 #include "StructuredDataExchanger.h"
+#include "FlowModel.h"
 #include <cstdlib>
 #include <iostream>
 
@@ -71,6 +71,8 @@ void Step(Structured<double>& U, const IndexRange& cr)
 int main(int argc, char** argv)
 {
     Communicator::Initialize(&argc, &argv);
+
+    FlowModel model;
 
     int imax = 10, jmax = 10, kmax = 1;
     IndexRange meshRange(0, 0, 0, imax, jmax, kmax);
@@ -120,8 +122,8 @@ int main(int argc, char** argv)
         block1->U()(i, jmax / 2, 1)[0] = 1.0;
     }
 
-    StructuredDataExchanger ex1(*block1, block1->U());
-    StructuredDataExchanger ex2(*block2, block2->U());
+    StructuredDataExchanger ex1(*block1, &model, block1->U());
+    StructuredDataExchanger ex2(*block2, &model, block2->U());
 
     ex1.Start();
     ex2.Start();

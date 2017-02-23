@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: BCPlanarLocal.cpp 277 2013-06-04 01:58:51Z kato $
 
 #include "BCPlanarLocal.h"
 #include "Vector3.h"
@@ -28,8 +27,11 @@ BCPlanarLocal::Apply(const Block& block, Structured<double>& U)
     IndexRange faceRange = MetricRange();
     Structured<double> surface = Surface(block);
 
-    IndexIJK dGhost(0, 0, 0), dInterior(0, 0, 0), deltaInterior(0, 0, 0);
-    double SnDir = 1.0;
+    IndexIJK dGhost = DGhost();
+    IndexIJK dInterior = DInterior();
+    IndexIJK deltaInterior = DeltaInterior();
+    double SnDir = SnDirection();
+#if 0
     switch (PatchDirection())
     {
     case I:
@@ -65,6 +67,7 @@ BCPlanarLocal::Apply(const Block& block, Structured<double>& U)
     default:
         assert(false);
     }
+#endif
 
     for (int k = faceRange.Start.K; k <= faceRange.End.K; ++k)
     {
@@ -90,6 +93,11 @@ BCPlanarLocal::ApplyTurb(const Block& block, Structured<double>& UT, const Struc
     IndexRange faceRange = MetricRange();
     Structured<double> surface = Surface(block);
 
+    IndexIJK dGhost = DGhost();
+    IndexIJK dInterior = DInterior();
+    IndexIJK deltaInterior = DeltaInterior();
+    double SnDir = SnDirection();
+#if 0
     IndexIJK dGhost(0, 0, 0), dInterior(0, 0, 0), deltaInterior(0, 0, 0);
     switch (PatchDirection())
     {
@@ -120,6 +128,7 @@ BCPlanarLocal::ApplyTurb(const Block& block, Structured<double>& UT, const Struc
     default:
         assert(false);
     }
+#endif
 
     for (int k = faceRange.Start.K; k <= faceRange.End.K; ++k)
     {
@@ -131,7 +140,7 @@ BCPlanarLocal::ApplyTurb(const Block& block, Structured<double>& UT, const Struc
                 IndexIJK iGhost = iFace + dGhost;
                 IndexIJK iInterior = iFace + dInterior;
 
-                Vector3 Sn(surface(iFace));
+                Vector3 Sn = SnDir * Vector3(surface(iFace));
 
                 LocalFuncTurb(iFace, iGhost, iInterior, deltaInterior, Sn, UT, U, block);
             }

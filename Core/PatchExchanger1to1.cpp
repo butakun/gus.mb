@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: PatchExchanger1to1.cpp 180 2012-01-13 08:48:04Z kato $
 
 #include "Communicator.h"
 #include "PatchExchanger1to1.h"
@@ -78,11 +77,11 @@ void
 PatchExchanger1to1::StartRemote(int myRank, int donorRank)
 {
     IndexRange crToSend = mConn.CellRangeToSend();
-    //IndexRange crToRecv = mConn.CellRangeToRecv();
 
 #if 0
-    std::ostream& cout = Communicator::GetInstance()->Console();
-    cout << "PatchExchanger1to1::StartRemote: Block " << mConn.BlockID() << " <-> DonorBlock " << mConn.DonorBlockID() << ", crToSend = " << crToSend << ", crToRecv = " << crToRecv << std::endl;
+    IndexRange crToRecv = mConn.CellRangeToRecv();
+    std::ostream& LOG = Communicator::GetInstance()->Console();
+    LOG << "PatchExchanger1to1::StartRemote: Block " << mConn.BlockID() << " <-> DonorBlock " << mConn.DonorBlockID() << ", crToSend = " << crToSend << ", crToRecv = " << crToRecv << std::endl;
 #endif
 
     for (int k = crToSend.Start.K; k <= crToSend.End.K; ++k)
@@ -112,7 +111,7 @@ PatchExchanger1to1::StartRemote(int myRank, int donorRank)
         &mSendReq
         );
     assert(err == MPI_SUCCESS);
-    //cout << "PatchExchanger1to1::StartRemote: Block " << mConn.BlockID() << ", Send request = " << mSendReq << std::endl;
+    //LOG << "PatchExchanger1to1::StartRemote: Block " << mConn.BlockID() << ", Send request = " << mSendReq << std::endl;
 
     err = MPI_Irecv(
         mDataToRecv.Data,
@@ -124,7 +123,7 @@ PatchExchanger1to1::StartRemote(int myRank, int donorRank)
         &mRecvReq
         );
     assert(err == MPI_SUCCESS);
-    //cout << "PatchExchanger1to1::StartRemote: Block " << mConn.BlockID() << ", Recv request = " << mRecvReq << std::endl;
+    //LOG << "PatchExchanger1to1::StartRemote: Block " << mConn.BlockID() << ", Recv request = " << mRecvReq << std::endl;
 }
 
 void
@@ -136,8 +135,8 @@ PatchExchanger1to1::FinishLocal()
 
 #if 0
     IndexRange crToSend = mConn.CellRangeToSend();
-    std::ostream& cout = Communicator::GetInstance()->Console();
-    cout << "PatchExchanger1to1::FinishLocal:" << mConn.Tag() << " Block " << mConn.BlockID() << " <-> DonorBlock " << mConn.DonorBlockID() << ", crToSend = " << crToSend << ", crToRecv = " << crToRecv << std::endl;
+    std::ostream& LOG = Communicator::GetInstance()->Console();
+    LOG << "PatchExchanger1to1::FinishLocal:" << mConn.Tag() << " Block " << mConn.BlockID() << " <-> DonorBlock " << mConn.DonorBlockID() << ", crToSend = " << crToSend << ", crToRecv = " << crToRecv << std::endl;
 #endif
 
     assert(crToRecv.IsCanonical());
@@ -177,8 +176,6 @@ PatchExchanger1to1::FinishRemote(int myRank, int donorRank)
     int err;
     MPI_Status status;
 
-    //std::ostream& cout = Communicator::GetInstance()->Console();
-
     err = MPI_Wait(&mSendReq, &status);
     assert(err == MPI_SUCCESS);
 
@@ -186,6 +183,8 @@ PatchExchanger1to1::FinishRemote(int myRank, int donorRank)
     assert(err == MPI_SUCCESS);
 
     IndexRange crToRecv = mConn.CellRangeToRecv();
+    std::ostream& LOG = Communicator::GetInstance()->Console();
+    //LOG << "PatchExchanger1to1::FinishRemote:" << mConn.Tag() << " Block " << mConn.BlockID() << " selfCellRange " << crToRecv << std::endl;
     for (int k = crToRecv.Start.K; k <= crToRecv.End.K; ++k)
     {
         for (int j = crToRecv.Start.J; j <= crToRecv.End.J; ++j)

@@ -17,22 +17,22 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: StructuredDataExchanger.cpp 180 2012-01-13 08:48:04Z kato $
 
 #include <mpi.h> // FIXME
 #include "StructuredDataExchanger.h"
 #include "Communicator.h"
 #include "Connectivity1to1.h"
 #include "PatchExchanger1to1.h"
+#include "Roster.h"
 #include <vector>
 
 StructuredDataExchanger::BlockDataMap StructuredDataExchanger::mBlockDataMap;
 
-StructuredDataExchanger::StructuredDataExchanger(const Block& block, Structured<double>& data)
+StructuredDataExchanger::StructuredDataExchanger(const Block& block, const Model* model, Structured<double>& data)
 :   mBlock(block), mData(data)
 {
-    const BCs& bcs = mBlock.GetBCs();
-    for (BCs::const_iterator i = bcs.begin(); i != bcs.end(); ++i)
+    const std::vector<BC*>& bcs = Roster::GetInstance()->GetBCs(block.ID(), model);
+    for (std::vector<BC*>::const_iterator i = bcs.begin(); i != bcs.end(); ++i)
     {
         Connectivity* conn = dynamic_cast<Connectivity*>(*i);
         if (conn == NULL)

@@ -29,6 +29,9 @@
 #include <map>
 #include <vector>
 
+class BC;
+class Model;
+
 class Roster
 {
 public:
@@ -51,6 +54,12 @@ public:
     const BlockPatches& RegisterBlockPatchFamily(int familyID, const BlockPatches& bps);
     const BlockPatches& GetBlockPatchFamily(int familyID) const;
     const BlockPatchesMap& BlockPatchFamilies() const { return mBlockPatchFamilies; }
+
+    // BCs
+    void RegisterBC(int blockID, const Model* model, BC* bc);
+    const std::vector<BC*>& GetBCs(int blockID, const Model* model) const;
+    void ApplyBCs(const Model* model);
+    void ApplyTurbBCs(const Model* model);
 
     // Interfaces
     void AddInterface(AbuttingInterface* interface);
@@ -94,6 +103,12 @@ private:
     double mMeshScaling;
     std::map<int, Structured<double> > mCachedMesh;
     std::map<int, Structured<double> > mBlockPatchMeshes;
+
+    // BCs
+    typedef std::vector<BC*> BCs;
+    typedef std::map<int, BCs> BlockBCs;
+    typedef std::map<std::string, BlockBCs> ModelBlockBCs;
+    ModelBlockBCs mModelBlockBCs;
 
     // BC Family data
     class BCFamilyData

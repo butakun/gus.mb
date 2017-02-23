@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: Model.h 253 2012-07-20 10:03:41Z kato $
 #ifndef INCLUDED_MODEL_H__
 #define INCLUDED_MODEL_H__
 
@@ -27,6 +26,8 @@ class Model
 {
 public:
     virtual ~Model() {}
+
+    virtual const char* Name() const = 0;
 
     // Coordinate frame transform
     virtual void FromGlobalToLocal(double* ULocal, double* UGlobal, const Block& block, const IndexIJK& ijk) const = 0;

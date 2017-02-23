@@ -1023,7 +1023,11 @@ int main(int argc, char** argv)
                 {
                     assert(false);
                 }
+#if 0
                 block->RegisterBC(bc);
+#else
+                Roster::GetInstance()->RegisterBC(block->ID(), model, bc);
+#endif
                 std::cout << "Added BC " << name << " of type " << type << bc->MeshRange() << " : " << range << std::endl;
                 CONSOLE << "Added BC " << name << " of type " << type << bc->MeshRange() << " : " << range << std::endl;
 
@@ -1080,7 +1084,11 @@ int main(int argc, char** argv)
                 {
                     //assert(false);
                 }
+#if 0
                 block->RegisterBC(conn);
+#else
+                Roster::GetInstance()->RegisterBC(block->ID(), model, conn);
+#endif
                 std::cout << "Added Conn1to1 " << connName << " : self " << selfRange << " donor " << donorRange << std::endl;
                 CONSOLE << "Added Conn1to1 " << connName << " : self " << selfRange << " donor " << donorRange << std::endl;
             }
@@ -1330,25 +1338,40 @@ int main(int argc, char** argv)
             }
             delete turbSpec;
 
+#if 0
             block->CheckNegatives();
             block->ApplyBCs();
             block->ApplyTurbBCs();
+#endif
         }
         f.close();
         COMM->Barrier();
     }
 
+    // Apply BCs to the initial solution
+    Roster::GetInstance()->ApplyBCs(model);
+    COMM->Barrier();
+    for (Blocks::iterator i = blocks.begin(); i != blocks.end(); ++i)
+        (*i)->ComputeTransportProperties();
+    Roster::GetInstance()->ApplyTurbBCs(modelT);
+    COMM->Barrier();
+    for (Blocks::iterator i = blocks.begin(); i != blocks.end(); ++i)
+        (*i)->ComputeTurbulentTransportProperties();
+    COMM->Barrier();
+    for (Blocks::iterator i = blocks.begin(); i != blocks.end(); ++i)
+        (*i)->CheckNegatives();
+
     // Exchange rind data among blocks
     {
     CONSOLE << "Exchanging and filling rind cell data" << std::endl;
-    COMM->Barrier();
+    Probe(CONSOLE, blocks, probeRanges);
     typedef std::vector<StructuredDataExchanger*> SDXs;
     SDXs sdxUs, sdxUTs;
     for (Blocks::iterator i = blocks.begin(); i != blocks.end(); ++i)
     {
         Block* block = *i;
-        sdxUs.push_back(new StructuredDataExchanger(*block, block->U()));
-        sdxUTs.push_back(new StructuredDataExchanger(*block, block->UT()));
+        sdxUs.push_back(new StructuredDataExchanger(*block, model, block->U()));
+        sdxUTs.push_back(new StructuredDataExchanger(*block, model, block->UT()));
     }
     for (SDXs::iterator i = sdxUs.begin(); i != sdxUs.end(); ++i)
     {
@@ -1438,12 +1461,10 @@ int main(int argc, char** argv)
     }
     COMM->Barrier();
 
+#if 0
     for (Blocks::iterator i = blocks.begin(); i != blocks.end(); ++i)
     {
         Block* block = *i;
-
-        // 2D flow enforcement
-        //block->RegisterBC(new BCEnforce2D(BCEnforce2D::TWOD_Z));
 
         block->ApplyBCs();
         block->ComputeTransportProperties();
@@ -1451,6 +1472,21 @@ int main(int argc, char** argv)
         block->ComputeTurbulentTransportProperties();
         block->CheckNegatives();
     }
+#else
+#if 1
+    Roster::GetInstance()->ApplyBCs(model);
+    COMM->Barrier();
+    for (Blocks::iterator i = blocks.begin(); i != blocks.end(); ++i)
+        (*i)->ComputeTransportProperties();
+    Roster::GetInstance()->ApplyTurbBCs(modelT);
+    COMM->Barrier();
+    for (Blocks::iterator i = blocks.begin(); i != blocks.end(); ++i)
+        (*i)->ComputeTurbulentTransportProperties();
+    COMM->Barrier();
+    for (Blocks::iterator i = blocks.begin(); i != blocks.end(); ++i)
+        (*i)->CheckNegatives();
+#endif
+#endif
 
     if (unsteady)
     {
@@ -1458,8 +1494,6 @@ int main(int argc, char** argv)
         for (Blocks::iterator i = blocks.begin(); i != blocks.end(); ++i)
         {
             Block* block = *i;
-            //block->ApplyBCs();
-            //block->ComputeTransportProperties();
             block->ShiftTime();
             block->ShiftTime();
         }
@@ -1497,6 +1531,9 @@ int main(int argc, char** argv)
             int nisteps = integrators[0]->IntegrationSteps();
             for (int ii = 0; ii < nisteps; ++ii)
             {
+                // Prepare ghost cells for BC
+                Roster::GetInstance()->ApplyBCs(model);
+
                 // Pre-Integrate Phase
                 for (size_t iblock = 0; iblock < blocks.size(); ++iblock)
                 {

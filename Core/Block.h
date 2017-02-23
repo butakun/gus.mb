@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: Block.h 255 2012-12-05 07:47:00Z kato $
 #ifndef INCLUDED_HIRO_BLOCK_H__
 #define INCLUDED_HIRO_BLOCK_H__
 
@@ -73,8 +72,8 @@ public:
     bool CheckNegatives(std::vector<IndexIJK>& indices) const { return CheckNegatives(mU, indices); }
     bool CheckNegatives(const Structured<double>& U, std::vector<IndexIJK>& indices) const;
 
-    BCs& GetBCs() { return mBCs; }
-    const BCs& GetBCs() const { return mBCs; }
+    //BCs& GetBCs() { return mBCs; }
+    //const BCs& GetBCs() const { return mBCs; }
     void RegisterBC(BC* bcfunctor);
     void ApplyBCs();
     void ApplyBCs(Structured<double> U);

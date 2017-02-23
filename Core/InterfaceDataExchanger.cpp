@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: InterfaceDataExchanger.cpp 315 2014-01-31 10:01:26Z kato $
 
 #include "Communicator.h"
 #include "InterfaceDataExchanger.h"

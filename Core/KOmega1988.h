@@ -109,6 +109,7 @@ class TurbulenceModel : public Model
 public:
     TurbulenceModel();
 
+    virtual const char* Name() const { return "KOmega1988"; }
     int DOF() const { return 2; }
 
     double MuT(const double* U, const double* UT) const;

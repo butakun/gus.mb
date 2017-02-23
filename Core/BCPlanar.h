@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: BCPlanar.h 231 2012-05-11 01:11:28Z kato $
 #ifndef INCLUDED_BC_PLANAR_H__
 #define INCLUDED_BC_PLANAR_H__
 
@@ -27,8 +26,7 @@
 class BCPlanar : public BC
 {
 public:
-    BCPlanar(const IndexRange& meshRange, Direction direction)
-    : BC(meshRange), mDirection(direction) {}
+    BCPlanar(const IndexRange& meshRange, Direction direction);
     virtual ~BCPlanar() {}
 
     Direction PatchDirection() const { return mDirection; }
@@ -53,10 +51,16 @@ public:
     }
 
 protected:
+    IndexIJK DGhost() const { return mDGhost; }
+    IndexIJK DInterior() const { return mDInterior; }
+    IndexIJK DeltaInterior() const { return mDeltaInterior; }
+    double SnDirection() const { return mSnDirection; }
     void SetMaskWithAValue(Structured<int>& mask, int value) const;
 
 private:
     Direction mDirection;
+    IndexIJK mDGhost, mDInterior, mDeltaInterior;
+    double mSnDirection; // 1.0 if the face metric (Sn) is pointed inward (from boundary toward interior cells), -1.0 if outward.
 };
 
 #endif // INCLUDED_BC_PLANAR_H__

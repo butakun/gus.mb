@@ -37,8 +37,8 @@ LUSGSIntegrator<Model, ResEval>::LUSGSIntegrator(
     mDU2(mModel.DOF(), block.CellRangeWithGhosts()),
     mD(mModel.DOF(), block.CellRange()),
     mU2(U2), mU3(U3),
-    mSDXL(block, mDU2),
-    mSDXU(block, U),
+    mSDXL(block, &model, mDU2),
+    mSDXU(block, &model, U),
     mBDiag(1.0),
     mAlternateSweep(false)
 {
@@ -694,7 +694,7 @@ LUSGSIntegrator<Model, ResEval>::PostIntegrateStart(int step, const IterationCon
     }
     else if (step == 1)
     {
-        mModel.ApplyBCs(GetBlock());
+        //mModel.ApplyBCs(GetBlock());
         mSDXU.Start();
     }
     else

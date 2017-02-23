@@ -21,6 +21,7 @@
 #include "Communicator.h"
 #include "Physics.h"
 #include "Roster.h"
+#include "FlowModel.h"
 #include "Block.h"
 #include "CylinderMesh.h"
 #include "Connectivity1to1.h"
@@ -71,6 +72,8 @@ void Step(Structured<double>& U, const IndexRange& cr)
 int main(int argc, char** argv)
 {
     Communicator::Initialize(&argc, &argv);
+
+    FlowModel model;
 
     int imax = 1, jmax = 1, kmax = 1;
     IndexRange meshRange(0, 0, 0, imax, jmax, kmax);
@@ -134,8 +137,8 @@ int main(int argc, char** argv)
         }
     }
 
-    StructuredDataExchanger ex1(*block1, block1->U());
-    StructuredDataExchanger ex2(*block2, block2->U());
+    StructuredDataExchanger ex1(*block1, &model, block1->U());
+    StructuredDataExchanger ex2(*block2, &model, block2->U());
 
     ex1.Start();
     ex2.Start();

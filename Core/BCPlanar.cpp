@@ -17,11 +17,52 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: BCPlanar.cpp 231 2012-05-11 01:11:28Z kato $
 
 #include "BCPlanar.h"
 #include "IndexUtils.h"
 #include <cassert>
+
+BCPlanar::BCPlanar(const IndexRange& meshRange, Direction direction)
+:   BC(meshRange), mDirection(direction),
+    mDGhost(0, 0, 0), mDInterior(0, 0, 0), mDeltaInterior(0, 0, 0),
+    mSnDirection(1.0)
+{
+    switch (PatchDirection())
+    {
+    case I:
+        mDInterior.I = 1;
+        mDeltaInterior.I = 1;
+        mSnDirection = 1.0;
+        break;
+    case INEG:
+        mDGhost.I = 1;
+        mDeltaInterior.I = -1;
+        mSnDirection = -1.0;
+        break;
+    case J:
+        mDInterior.J = 1;
+        mDeltaInterior.J = 1;
+        mSnDirection = 1.0;
+        break;
+    case JNEG:
+        mDGhost.J = 1;
+        mDeltaInterior.J = -1;
+        mSnDirection = -1.0;
+        break;
+    case K:
+        mDInterior.K = 1;
+        mDeltaInterior.K = 1;
+        mSnDirection = 1.0;
+        break;
+    case KNEG:
+        mDGhost.K = 1;
+        mDeltaInterior.K = -1;
+        mSnDirection = -1.0;
+        break;
+    default:
+        assert(false);
+    }
+}
 
 IndexRange
 BCPlanar::RindRange() const

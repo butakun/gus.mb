@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: StructuredDataExchanger.h 270 2013-02-08 09:26:36Z kato $
 #ifndef INCLUDED_STRUCTURED_DATA_EXCHANGER_H__
 #define INCLUDED_STRUCTURED_DATA_EXCHANGER_H__
 
@@ -27,13 +26,15 @@
 #include <list>
 #include <map>
 
+class Model;
+
 class StructuredDataExchanger : public DataExchanger
 {
 public:
     typedef std::list<PatchExchanger*> PatchExchangers;
     typedef std::map<int, Structured<double>*> BlockDataMap;
 
-    StructuredDataExchanger(const Block& block, Structured<double>& data);
+    StructuredDataExchanger(const Block& block, const Model* model, Structured<double>& data);
     virtual ~StructuredDataExchanger();
 
     virtual void Start();

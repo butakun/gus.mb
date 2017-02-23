@@ -394,18 +394,21 @@ Block::CheckNegatives(const Structured<double>& U, std::vector<IndexIJK>& indice
 void
 Block::RegisterBC(BC* bc)
 {
+    assert(false);
     mBCs.push_back(bc);
 }
 
 void
 Block::ApplyBCs()
 {
+    assert(false);
     ApplyBCs(U());
 }
 
 void
 Block::ApplyBCs(Structured<double> U)
 {
+    assert(false);
     for (BCs::iterator i = mBCs.begin(); i != mBCs.end(); ++i)
     {
         BC* bc = *i;
@@ -418,6 +421,7 @@ Block::ApplyBCs(Structured<double> U)
 void
 Block::ApplyTurbBCs()
 {
+    assert(false);
     for (BCs::iterator i = mBCs.begin(); i != mBCs.end(); ++i)
     {
         BC* bc = *i;

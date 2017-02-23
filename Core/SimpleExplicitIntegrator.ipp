@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: SimpleExplicitIntegrator.ipp 277 2013-06-04 01:58:51Z kato $
 
 template <class Model, class ResEval>
 SimpleExplicitIntegrator<Model, ResEval>::SimpleExplicitIntegrator(
@@ -27,7 +26,7 @@ SimpleExplicitIntegrator<Model, ResEval>::SimpleExplicitIntegrator(
 :   Integrator(mModel.DOF(), block, 1),
     mModel(model), mResEval(resEval),
     mR(model.DOF(), block.CellRange()),
-    mSDX(block, U),
+    mSDX(block, &model, U),
     mU2(U2), mU3(U3)
 {
 }
@@ -109,7 +108,7 @@ template <class Model, class ResEval>
 void
 SimpleExplicitIntegrator<Model, ResEval>::PostIntegrateStart(int step, const IterationContext& iteration)
 {
-    mModel.ApplyBCs(GetBlock());
+    //mModel.ApplyBCs(GetBlock());
     mSDX.Start();
 }
 
