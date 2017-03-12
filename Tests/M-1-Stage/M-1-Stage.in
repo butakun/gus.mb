@@ -1,8 +1,6 @@
 MeshFileName = "M-1-Stage.cgns"
 MeshScale = 1.0
 
-#Execution = {"Type":"Sequential", "Distribution":"Simple"}
-#Execution = {"Type":"Parallel", "Distribution":"Custom", "ZoneGroups":[[1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [11, 12, 13, 14, 15], [16, 17, 18, 19, 20, 21]]}
 Execution = {"Type":"Parallel", "Distribution":"Automatic"}
 
 # Reference
@@ -94,7 +92,7 @@ Initialization = {
 	}
 CFL = {"CFL0":10.0, "CFLMAX":10.0, "SER":0.5, "LocalTimeStepping":False} # works
 CFL = {"CFL0":15.0, "CFLMAX":15.0, "SER":0.5, "LocalTimeStepping":False} # works a bit noisy convergence?
-CFL = {"CFL0":20.0, "CFLMAX":20.0, "SER":0.5, "StartSERAt":5, "LocalTimeStepping":False}
+CFL = {"CFL0":5.0, "CFLMAX":5.0, "SER":0.5, "StartSERAt":5, "LocalTimeStepping":True}
 Iterations = {"MaxIterations":10000, "TurbulenceStartsAt":0}
 P3 = 0.2 * P0
 R1_RPM = -10080.0 * 1.0
@@ -110,7 +108,7 @@ BCs = [
 	{
 	"Patches":[ Family("Rotor1_OUTFLOW") ],
 	"Type":"OutletStaticPressure",
-	"Data":[P3]
+	"Data":[P3, True]
 	},
 	{
 	"Patches":[
@@ -122,6 +120,7 @@ BCs = [
 	{
 	"Patches":[ Family("Nozzle_Main_Blade"), Family("Rotor1_Main_Blade") ],
 	"Type":"ViscousWall",
+	"Data":["Stationary", -1.0],
 	},
 ]
 
