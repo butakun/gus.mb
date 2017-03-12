@@ -462,8 +462,8 @@ SlidingInterface::MapData(const Model& model, InterfaceDataAdaptorBase* adaptor)
 
 #if SLIDING_INTERFACE_DEBUG
     LOG << "MapData: data copied, before conversion to local frame" << std::endl;
-#endif
     DumpInterfaceGhostCells(LOG, model);
+#endif
 
     for (const auto& bp : SelfBlockPatches())
     {
@@ -473,8 +473,8 @@ SlidingInterface::MapData(const Model& model, InterfaceDataAdaptorBase* adaptor)
 
 #if SLIDING_INTERFACE_DEBUG
     LOG << "MapData: data copied, after conversion to local frame" << std::endl;
-#endif
     DumpInterfaceGhostCells(LOG, model);
+#endif
 }
 
 #include <fstream>
