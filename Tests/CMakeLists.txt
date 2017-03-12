@@ -15,10 +15,14 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# $Id: CMakeLists.txt 307 2013-10-02 07:03:39Z kato $
 
 find_package(CGNS REQUIRED)
 include_directories(${CGNS_INCLUDE_DIR})
+
+find_package(CGAL REQUIRED)
+include(${CGAL_USE_FILE})
+
+find_package(ANN REQUIRED)
 
 include_directories(
 	${Albastru_SOURCE_DIR}/Core
@@ -40,7 +44,7 @@ target_link_libraries(TestAbuttingInterface Core IO ${CGNS_LIBRARIES})
 #target_link_libraries(SimpleSolver IO Core ${CGNS_LIBRARIES})
 
 add_executable(Solver Solver.cpp)
-target_link_libraries(Solver IO Core ${CGNS_LIBRARIES})
+target_link_libraries(Solver IO Core ${ANN_LIBRARIES} ${CGNS_LIBRARIES} ${CGAL_LIBRARIES} ${GMP_LIBRARIES} ${MPFR_LIBRARIES})
 
 install(TARGETS Solver RUNTIME DESTINATION .)
 #install(FILES ${CGNS_LIBRARIES} DESTINATION .)
