@@ -15,13 +15,13 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# $Id: CMakeLists.txt 197 2012-02-03 13:04:48Z kato $
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.1)
 
 project(Albastru)
 
-set(CMAKE_BUILD_TYPE RelWithDebInfo)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
@@ -30,6 +30,8 @@ if(USE_PARALLEL)
   set(CMAKE_C_COMPILER mpicc)
   set(CMAKE_CXX_COMPILER mpicxx)
 endif(USE_PARALLEL)
+
+find_package(Boost REQUIRED)
 
 find_package(SWIG REQUIRED)
 include(${SWIG_USE_FILE})
@@ -41,6 +43,9 @@ endif(CMAKE_COMPILER_IS_GNUCC)
 if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "-Wall")
 endif(CMAKE_COMPILER_IS_GNUCXX)
+
+#find_package(CGAL REQUIRED)
+#include(${CGAL_USE_FILE})
 
 add_subdirectory(Core)
 add_subdirectory(Python)
