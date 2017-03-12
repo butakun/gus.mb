@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: BlockPatch.cpp 254 2012-10-07 17:51:59Z kato $
 
 #include "Roster.h"
 #include "BlockPatch.h"

@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: Communicator.cpp 27 2010-05-23 15:51:53Z kato $
 
 #include "Communicator.h"
 #include "DummyCommunicator.h"

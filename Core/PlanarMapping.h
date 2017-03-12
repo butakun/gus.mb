@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: PlanarMapping.h 261 2013-01-05 12:01:20Z kato $
 #ifndef INCLUDED_PLANAR_MAPPING_H__
 #define INCLUDED_PLANAR_MAPPING_H__
 

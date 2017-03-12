@@ -82,3 +82,72 @@ AbuttingInterface::SetPatchMesh(int blockID, const Structured<double>& XYZ)
     }
 }
 
+void
+AbuttingInterface::ConvertMappedDataToLocalFrame(const Model& model, Structured<double>& U, const BlockPatch& bp) const
+{
+    //std::ostream& LOG = Communicator::GetInstance()->Console();
+
+    const Block& block = dynamic_cast<const Block&>(*Roster::GetInstance()->GetBlock(bp.BlockID()));
+
+    IndexRange cr0;
+    IndexIJK i1, i2, di3;
+    bp.GhostCellRange(cr0, i1, i2, di3);
+
+    int ndof = U.DOF();
+    double * tmp = new double[ndof];
+
+    for (IndexIterator itor(cr0); !itor.IsEnd(); itor.Advance())
+    {
+        IndexIJK ijk = itor.Index();
+        double* u = U(ijk);
+        for (int l = 0; l < ndof; ++l)
+        {
+            tmp[l] = u[l];
+        }
+        model.FromGlobalToLocal(u, tmp, block, ijk);
+    }
+    for (int irind = 1; irind < block.GhostLayers(); ++irind)
+    {
+        for (IndexIterator itor(cr0); !itor.IsEnd(); itor.Advance())
+        {
+            IndexIJK ijk = itor.Index();
+            double* u0 = U(ijk);
+            double* u = U(ijk + di3 * irind);
+            for (int l = 0; l < ndof; ++l)
+            {
+                u[l] = u0[l];
+            }
+        }
+    }
+
+    delete[] tmp;
+}
+
+void
+AbuttingInterface::DumpInterfaceGhostCells(std::ostream& o, const Model& model) const
+{
+    for (const auto& bp : SelfBlockPatches())
+    {
+        o << "DumpInterfaceGhostCells: " << bp << std::endl;
+        const Block& block = dynamic_cast<const Block&>(*Roster::GetInstance()->GetBlock(bp.BlockID()));
+        const Structured<double>& U = block.U(); // FIXME
+        size_t dof = U.DOF();
+
+        IndexRange cr;
+        IndexIJK i1, i2, di3;
+        bp.GhostCellRange(cr, i1, i2, di3);
+
+        for (IndexIterator itor(cr); !itor.IsEnd(); itor.Advance())
+        {
+            IndexIJK ijk = itor.Index();
+            double* u = U(ijk);
+            o << ijk << ':';
+            for (int l = 0; l < dof; ++l)
+            {
+                o << u[l] << ' ';
+            }
+            o << std::endl;
+        }
+    }
+}
+

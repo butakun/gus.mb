@@ -67,8 +67,6 @@ protected:
     : AbuttingInterface(blockPatches, donorBlockPatches)
     {}
 
-    void ConvertMappedDataToLocalFrame(const Model& model, Structured<double>& U, const BlockPatch& bp) const;
-
 private:
     Mappings mMappings;
 };

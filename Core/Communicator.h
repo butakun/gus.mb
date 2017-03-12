@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: Communicator.h 225 2012-05-01 23:18:07Z kato $
 #ifndef INCLUDED_COMMUNICATOR_H__
 #define INCLUDED_COMMUNICATOR_H__
 

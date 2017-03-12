@@ -59,6 +59,8 @@ protected:
     {}
 
     PatchMeshes& GetPatchMeshes() { return mPatchMeshes; }
+    void ConvertMappedDataToLocalFrame(const Model& model, Structured<double>& U, const BlockPatch& bp) const;
+    void DumpInterfaceGhostCells(std::ostream& o, const Model& model) const;
 
 private:
     BlockPatches mBlockPatches;

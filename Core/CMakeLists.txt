@@ -22,8 +22,10 @@ include_directories($(CMAKE_CURRENT_SOURCE_DIR) ${Albastru_SOURCE_DIR}/IO)
 find_package(CGNS REQUIRED)
 include_directories(${CGNS_INCLUDE_DIR})
 
-#find_package(ANN REQUIRED)
-#include_directories(${ANN_INCLUDE_DIR})
+find_package(ANN REQUIRED)
+include_directories(${ANN_INCLUDE_DIR})
+
+include_directories(${Boost_INCLUDE_DIRS})
 
 add_library(Core
 	Structured.cpp
@@ -67,6 +69,7 @@ add_library(Core
 	TurbulenceSpec.cpp
 	KOmega1988.cpp
 	AbuttingInterface.cpp
+	SlidingInterface.cpp
 	SimplePlanarAbuttingInterface.cpp
 	PlanarMapping.cpp
 	GeometricMapping.cpp

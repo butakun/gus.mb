@@ -258,47 +258,6 @@ SimplePlanarAbuttingInterface::GetMapper(int blockPatchUniqueID) const
 }
 
 void
-SimplePlanarAbuttingInterface::ConvertMappedDataToLocalFrame(const Model& model, Structured<double>& U, const BlockPatch& bp) const
-{
-    //std::ostream& LOG = Communicator::GetInstance()->Console();
-
-    const Block& block = dynamic_cast<const Block&>(*Roster::GetInstance()->GetBlock(bp.BlockID()));
-
-    IndexRange cr0;
-    IndexIJK i1, i2, di3;
-    bp.GhostCellRange(cr0, i1, i2, di3);
-
-    int ndof = U.DOF();
-    double * tmp = new double[ndof];
-
-    for (IndexIterator itor(cr0); !itor.IsEnd(); itor.Advance())
-    {
-        IndexIJK ijk = itor.Index();
-        double* u = U(ijk);
-        for (int l = 0; l < ndof; ++l)
-        {
-            tmp[l] = u[l];
-        }
-        model.FromGlobalToLocal(u, tmp, block, ijk);
-    }
-    for (int irind = 1; irind < block.GhostLayers(); ++irind)
-    {
-        for (IndexIterator itor(cr0); !itor.IsEnd(); itor.Advance())
-        {
-            IndexIJK ijk = itor.Index();
-            double* u0 = U(ijk);
-            double* u = U(ijk + di3 * irind);
-            for (int l = 0; l < ndof; ++l)
-            {
-                u[l] = u0[l];
-            }
-        }
-    }
-
-    delete[] tmp;
-}
-
-void
 SimplePlanarAbuttingInterface::DumpMappingResult(std::ostream& o) const
 {
     o << "<VTKFile type=\"PolyData\">" << std::endl;

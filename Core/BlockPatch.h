@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: BlockPatch.h 254 2012-10-07 17:51:59Z kato $
 #ifndef INCLUDED_BLOCK_PATCH_H__
 #define INCLUDED_BLOCK_PATCH_H__
 
@@ -35,7 +34,7 @@ public:
     const IndexRange& CellRange() const { return mCellRange; }
     IndexRange CellFaceRange() const;
 
-    // returns the cell range of the first rind layer. the second (deeper) rind layer can be had by incrementing the rage by di3.
+    // returns the cell range of the first rind layer. the second (deeper) rind layer can be had by incrementing the range by di3.
     void GhostCellRange(IndexRange& gcr, IndexIJK& i1, IndexIJK& i2, IndexIJK& di3) const;
 
     const IndexIJK& I1() const { return mI1; }

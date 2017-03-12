@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: DummyCommunicator.h 89 2011-01-28 14:16:26Z kato $
 #ifndef INCLUDED_DUMMY_COMMUNICATOR_H__
 #define INCLUDED_DUMMY_COMMUNICATOR_H__
 
