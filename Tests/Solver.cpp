@@ -48,6 +48,7 @@
 #include "TimeStepEvaluator.h"
 #include "StructuredDataExchanger.h"
 #include "SimplePlanarAbuttingInterface.h"
+#include "SlidingInterface.h"
 #include "InterfaceDataExchanger.h"
 #include "CGNSReader.h"
 #include "CGNSWriter.h"
@@ -1176,7 +1177,8 @@ int main(int argc, char** argv)
                 }
                 std::cout << "read self-donor = " << selfPatches.size() << ", " << donorPatches.size() << std::endl;
                 CONSOLE << "read self-donor = " << selfPatches.size() << ", " << donorPatches.size() << std::endl;
-                AbuttingInterface* interface = SimplePlanarAbuttingInterface::New(selfPatches, donorPatches);
+                //AbuttingInterface* interface = SimplePlanarAbuttingInterface::New(selfPatches, donorPatches);
+                SlidingInterface* interface = SlidingInterface::New(selfPatches, donorPatches);
 
                 // Read the mesh for blocks affected by the interface.
                 std::set<int> blockIDs = interface->BlockIDs();
