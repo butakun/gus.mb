@@ -20,6 +20,7 @@
 import CGNSFile, LoadBalance
 import numpy as np
 import fnmatch
+import sys
 
 class C1to1(object):
 	def __init__(self, zone, rang, donorZone, donorRange):
@@ -83,6 +84,8 @@ class CNMB(C1to1):
 class Family(object):
 	def __init__(self, name):
 		self.FamilyName = name
+	def __str__(self):
+		return "Family(" + self.FamilyName + ")"
 
 def CanonizeRange(r):
 	start = np.min([r[:3], r[3:]], 0)
@@ -226,7 +229,9 @@ def Main(filename, commsize):
 		#patchNamesAll = ExpandWildcards(patchNames, bocoNames)
 		#assert(len(patchNamesAll) > 0)
 		bocos = ExpandPatchNames(patchNames, mesh)
-		assert(len(bocos) > 0)
+		if not bocos:
+			print >>sys.stderr, "Patch names \"%s\" didn't match any patch." % reduce(lambda x, y : x + ', ' + y, patchNames)
+			raise ValueError
 		bcType = bc["Type"]
 		if bc.has_key("Data"):
 			bcData = bc["Data"]
@@ -527,6 +532,5 @@ def Main(filename, commsize):
 			print initTurb["FileName"]
 
 if __name__ == "__main__":
-	import sys
 	Main(sys.argv[1], int(sys.argv[2]))
 

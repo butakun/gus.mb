@@ -19,7 +19,7 @@
 
 import numpy as np
 import math as m
-import fnmatch
+import fnmatch, sys
 import CGNS
 from PointRange import *
 
@@ -184,13 +184,17 @@ class CGNSFile(object):
 	def __init__(self, filename, mode = "r"):
 
 		self.fn = CGNS.Open(filename, mode)
+		print >>sys.stderr, "Opened CGNS file %s" % filename
 
 		self.BaseName, cellDim, physDim = CGNS.BaseRead(self.fn, 1)
+		print >>sys.stderr, "base read"
 		mass, length, time, temp, angle = CGNS.UnitsRead()
+		print >>sys.stderr, "units read"
 		self.Units = {"Mass":mass, "Length":length, "Time":time, "Angle":angle}
 
 	def ReadZones(self, B = 1):
 
+		print >>sys.stderr, "Reading # of zones"
 		nzones = CGNS.NZones(self.fn, B)
 
 		base = Base(self.BaseName)
@@ -198,6 +202,7 @@ class CGNSFile(object):
 		zones = Zones()
 		for Z in range(1, nzones + 1):
 
+			print >>sys.stderr, "Reading Zone %d" % Z
 			name, size = CGNS.ZoneRead(self.fn, B, Z)
 			#zone = {"Zone":Z, "Name":name, "Size":size}
 			zone = Zone(base, Z, name, size)
