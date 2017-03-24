@@ -33,12 +33,12 @@
 #include <iostream>
 
 class InterfaceDataAdaptorBase;
+class IterationContext;
 
 class SlidingInterface : public AbuttingInterface
 {
 public:
     typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
-    //typedef CGAL::Simple_cartesian<double> Kernel;
     typedef Kernel::Point_2 Point_2;
     typedef Kernel::Segment_2 Segment_2;
     typedef CGAL::Polygon_2<Kernel> Polygon_2;
@@ -69,10 +69,11 @@ public:
 
 protected:
     SlidingInterface(const BlockPatches& blockPatches, const BlockPatches& donorBlockPatches)
-    : AbuttingInterface(blockPatches, donorBlockPatches), mDonorCentroids(NULL), mKDTree(NULL), mRadial(false)
+    : AbuttingInterface(blockPatches, donorBlockPatches), mDirty(true), mDonorCentroids(NULL), mKDTree(NULL), mRadial(false)
     {}
 
     void DetectRadialInterface();
+    void RebuildMeshDB();
 
     Point_2 MapTo2DRadial(const Vector3& p) const; // deprecated
     void MapTo2DRadial(double& theta, double& eta, const Vector3& p) const;
@@ -84,14 +85,22 @@ private:
     ANNpointArray mDonorCentroids;
     ANNkd_tree* mKDTree;
 
-    std::vector<PatchCellFaceIndex> mSelfCellFaceIndices, mDonorCellFaceIndices;
-    std::vector<Polygon_2> mSelfCellFaces, mDonorCellFaces;
+#if 0
+    // Following two vectors store patch cell faces and vertices without translation/rotation.
+    std::vector<Vector3> mSelfVertices, mDonorVertices;
+    std::vector<std::vector<size_t> > mSelfCellFaces, mDonorCellFaces;
+#endif
 
-    //std::vector<Kernel::FT> mSelfCellFaceAreas, mDonorCellFaceAreas;
+    IterationContext mIterContext; // cell face data below correspond to this iteration context, if iter context differs we will recompute them.
+    bool mDirty;
+
+    std::vector<PatchCellFaceIndex> mSelfCellFaceIndices, mDonorCellFaceIndices;
+    std::vector<Polygon_2> mSelfCellPolygons, mDonorCellPolygons;
+
     std::vector<double> mSelfCellFaceAreas, mDonorCellFaceAreas;
     std::vector<std::list<CellFaceIntersection> > mCellFaceIntersections;
-    //std::vector<double> mSelfCellFaceSqLengths; // (squared) characteristic lengths used for ANN search
 
+    // For radial interface, as in radial turbomachinery
     bool mRadial;
     std::string mAxis;
     Vector3 mAxis1, mAxis2, mAxis3; // mAxis3 is the axis of rotation

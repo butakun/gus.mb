@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: VirtualBlock.h 258 2012-12-26 07:36:54Z kato $
 #ifndef INCLUDED_VIRTUAL_BLOCK_H__
 #define INCLUDED_VIRTUAL_BLOCK_H__
 

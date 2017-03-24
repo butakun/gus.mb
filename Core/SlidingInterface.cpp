@@ -229,15 +229,28 @@ SlidingInterface::ComputeCentroid(ANNpoint centroid, const Polygon_2& poly) cons
 void
 SlidingInterface::InitializeMapping()
 {
-    std::ostream& LOG = Communicator::GetInstance()->Console();
-
     DetectRadialInterface();
     if (!mRadial) assert(false);
 
+    mDirty = true;
+}
+
+void
+SlidingInterface::RebuildMeshDB()
+{
+    std::ostream& LOG = Communicator::GetInstance()->Console();
+
+    mSelfCellFaceIndices.clear();
+    mDonorCellFaceIndices.clear();
+    mSelfCellPolygons.clear();
+    mDonorCellPolygons.clear();
+    mSelfCellFaceAreas.clear();
+    mDonorCellFaceAreas.clear();
+    mCellFaceIntersections.clear();
+
     std::vector<const BlockPatches*> bps_ = { &SelfBlockPatches(), &DonorBlockPatches() };
     std::vector<std::vector<PatchCellFaceIndex>*> cfis_ = { &mSelfCellFaceIndices, &mDonorCellFaceIndices };
-    std::vector<std::vector<Polygon_2>*> cfs_ = { &mSelfCellFaces, &mDonorCellFaces };
-    //std::vector<std::vector<Kernel::FT>*> cfas_ = { &mSelfCellFaceAreas, &mDonorCellFaceAreas };
+    std::vector<std::vector<Polygon_2>*> cfs_ = { &mSelfCellPolygons, &mDonorCellPolygons };
     std::vector<std::vector<double>*> cfas_ = { &mSelfCellFaceAreas, &mDonorCellFaceAreas };
 
     for (auto tup : boost::combine(bps_, cfis_, cfs_, cfas_))
@@ -245,10 +258,9 @@ SlidingInterface::InitializeMapping()
         const BlockPatches* bps;
         std::vector<PatchCellFaceIndex>* cfis;
         std::vector<Polygon_2>* cfs;
-        //std::vector<Kernel::FT>* cfas;
         std::vector<double>* cfas;
         boost::tie(bps, cfis, cfs, cfas) = tup;
-        for (auto bp : *bps)
+        for (const auto& bp : *bps)
         {
             PatchMeshes::const_iterator ipm = GetPatchMeshes().find(bp.UniqueID());
             const Structured<double>& XYZ = ipm->second;
@@ -274,14 +286,14 @@ SlidingInterface::InitializeMapping()
         }
     }
     LOG << "PatchCellFaceIndices: " << mSelfCellFaceIndices.size() << ", " << mDonorCellFaceIndices.size() << std::endl;
-    LOG << "CellFaces: " << mSelfCellFaces.size() << ", " << mDonorCellFaces.size() << std::endl;
+    LOG << "CellFaces: " << mSelfCellPolygons.size() << ", " << mDonorCellPolygons.size() << std::endl;
     LOG << "CellFaceAreas: " << mSelfCellFaceAreas.size() << ", " << mDonorCellFaceAreas.size() << std::endl;
 
     // add copies of donor cells beyond theta = [-pi:pi] FIXME
-    size_t donorCellFacesCount = mDonorCellFaces.size();
+    size_t donorCellFacesCount = mDonorCellPolygons.size();
     for (size_t i = 0; i < donorCellFacesCount; ++i)
     {
-        const Polygon_2& polyOrig = mDonorCellFaces[i];
+        const Polygon_2& polyOrig = mDonorCellPolygons[i];
         double theta[4];
         for (size_t l = 0; l < 4; ++l)
             theta[l] = CGAL::to_double(polyOrig[l].x()) / mRadius;
@@ -304,35 +316,19 @@ SlidingInterface::InitializeMapping()
 
         Polygon_2 poly(pts, pts + 4);
         //LOG << "Adding a copy of polygon " << i << " cyclically " << poly << std::endl;
-        mDonorCellFaces.push_back(poly);
+        mDonorCellPolygons.push_back(poly);
         mDonorCellFaceIndices.push_back(mDonorCellFaceIndices[i]);
         mDonorCellFaceAreas.push_back(mDonorCellFaceAreas[i]);
     }
 
     // build ANN database
-#if 0
-    mSelfCellFaceSqLengths.resize(mSelfCellFaces.size());
-    for (size_t i = 0; i < mSelfCellFaces.size(); ++i)
+    mDonorCentroids = annAllocPts(mDonorCellPolygons.size(), 2);
+    for (size_t i = 0; i < mDonorCellPolygons.size(); ++i)
     {
-        const Polygon_2& poly = mSelfCellFaces[i];
-        double sqLength = 0.0;
-        for (Polygon_2::Edge_const_iterator j = poly.edges_begin();
-            j != poly.edges_end(); ++j)
-        {
-            sqLength = std::max(sqLength, CGAL::to_double(j->squared_length()));
-        }
-        LOG << "Self cell " << i << " sqLength = " << sqLength << std::endl;
-        mSelfCellFaceSqLengths[i] = sqLength;
-    }
-#endif
-
-    mDonorCentroids = annAllocPts(mDonorCellFaces.size(), 2);
-    for (size_t i = 0; i < mDonorCellFaces.size(); ++i)
-    {
-        const Polygon_2& poly = mDonorCellFaces[i];
+        const Polygon_2& poly = mDonorCellPolygons[i];
         ComputeCentroid(mDonorCentroids[i], poly);
     }
-    mKDTree = new ANNkd_tree(mDonorCentroids, mDonorCellFaces.size(), 2);
+    mKDTree = new ANNkd_tree(mDonorCentroids, mDonorCellPolygons.size(), 2);
 
     // find intersections
     typedef CGAL::Polygon_with_holes_2<Kernel> Polygon_with_holes_2;
@@ -344,10 +340,10 @@ SlidingInterface::InitializeMapping()
     ANNidxArray nnIdx = new ANNidx[kMax];
     ANNdistArray dists = new ANNdist[kMax];
 
-    mCellFaceIntersections.resize(mSelfCellFaces.size());
-    for (size_t i = 0; i < mSelfCellFaces.size(); ++i)
+    mCellFaceIntersections.resize(mSelfCellPolygons.size());
+    for (size_t i = 0; i < mSelfCellPolygons.size(); ++i)
     {
-        const Polygon_2& selfPoly = mSelfCellFaces[i];
+        const Polygon_2& selfPoly = mSelfCellPolygons[i];
         ComputeCentroid(selfCentroid, selfPoly);
         double selfArea = mSelfCellFaceAreas[i];
         //LOG << "Cell " << i << "(" << selfArea << ")" << selfPoly << std::endl;
@@ -369,7 +365,7 @@ SlidingInterface::InitializeMapping()
             for (size_t j = kStart; j < k; ++j)
             {
                 size_t iDonor = nnIdx[j];
-                const Polygon_2& donorPoly = mDonorCellFaces[iDonor];
+                const Polygon_2& donorPoly = mDonorCellPolygons[iDonor];
                 //LOG << " " << j << "-th nearest neighbor is donor cell " << iDonor << " " << donorPoly;
                 std::list<Polygon_with_holes_2> pwhList;
                 CGAL::intersection(selfPoly, donorPoly, std::back_inserter(pwhList));
@@ -406,12 +402,18 @@ SlidingInterface::InitializeMapping()
     annDeallocPt(selfCentroid);
     delete[] nnIdx;
     delete[] dists;
+
+    mDirty = false;
 }
 
 void
 SlidingInterface::MapMesh(const IterationContext& iteration)
 {
-    // FIXME: the latter part of InitializeMapping should go here
+    if (mDirty || mIterContext.Time() != iteration.Time())
+    {
+        RebuildMeshDB();
+        mIterContext = iteration;
+    }
 }
 
 void
@@ -494,21 +496,21 @@ void
 SlidingInterface::DumpIntersection(size_t iSelf, ANNidxArray nnIdx, int k) const
 {
     std::ofstream dump("overlap_failed.dat");
-    write_polygon(dump, mSelfCellFaces[iSelf]);
+    write_polygon(dump, mSelfCellPolygons[iSelf]);
     dump << std::endl << std::endl;
     for (size_t i = 0; i < k; ++i)
     {
-        write_polygon(dump, mDonorCellFaces[nnIdx[i]]);
+        write_polygon(dump, mDonorCellPolygons[nnIdx[i]]);
         dump << std::endl;
     }
     dump.close();
 
     dump.open("overlap_failed_alldonors.dat");
-    write_polygon(dump, mSelfCellFaces[iSelf]);
+    write_polygon(dump, mSelfCellPolygons[iSelf]);
     dump << std::endl << std::endl;
-    for (size_t i = 0; i < mDonorCellFaces.size(); ++i)
+    for (size_t i = 0; i < mDonorCellPolygons.size(); ++i)
     {
-        write_polygon(dump, mDonorCellFaces[i]);
+        write_polygon(dump, mDonorCellPolygons[i]);
         dump << std::endl;
     }
     dump.close();
