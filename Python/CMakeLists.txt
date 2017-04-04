@@ -15,13 +15,12 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# $Id: CMakeLists.txt 191 2012-01-20 02:38:43Z kato $
 
 find_package(SWIG REQUIRED)
 include(${SWIG_USE_FILE})
 find_package(PythonInterp)
 find_package(PythonLibs)
-include_directories(${PYTHON_INCLUDE_PATH})
+include_directories(${PYTHON_INCLUDE_DIR})
 set(CMAKE_SWIG_FLAGS "")
 set_source_files_properties(MPI.i PROPERTIES CPLUSPLUS ON)
 swig_add_module(MPI python MPI.i MPIFuncs.cpp)
