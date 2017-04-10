@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: IterationContext.h 262 2013-01-28 08:44:06Z kato $
 #ifndef INCLUDED_ITERATION_CONTEXT_H__
 #define INCLUDED_ITERATION_CONTEXT_H__
 

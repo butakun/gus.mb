@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// $Id: VirtualBlock.cpp 244 2012-06-01 15:39:32Z kato $
 
 #include "Roster.h"
 #include "VirtualBlock.h"
