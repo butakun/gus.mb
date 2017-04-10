@@ -2,6 +2,33 @@
 
 \section{Governing Equations}
 
+\subsection{Basic Equations}
+
+The conservation laws governing compressible flows are written in integral form as
+\begin{equation}
+\frac{\partial}{\partial t} \int_\Omega \mathbf{U}
++ \int_{\partial\Omega} \overline{\overline{\mathbf{H}}}\cdot d\mathbf{S} = 0,
+\end{equation}
+where
+\[
+\mathbf{U} = \left\{
+\begin{array}{c}
+\rho \\
+\rho\mathbf{V} \\
+\rho e_t
+\end{array}
+\right\}
+\]
+\[
+\overline{\overline{\mathbf{H}}} = \left\{
+\begin{array}{c}
+\rho\mathbf{V} \\
+\rho\mathbf{V}\mathbf{V} + \nabla p \cdot \overline{\overline{\mathbf{I}}} \\
+\rho h_t \mathbf{V}
+\end{array}
+\right\}
+\]
+
 \subsection{Nondimensionalization}
 
 The governing equations are nondimensionalized with the criteria that the resulting set of equations be easily applicable to both internal and external flows and that they render the equation of state
