@@ -19,6 +19,7 @@
 */
 
 #include "SlidingInterface.h"
+#include "RigidBodyMotion.h"
 #include "Roster.h"
 #include "Communicator.h"
 #include <boost/range/combine.hpp>
@@ -236,10 +237,11 @@ SlidingInterface::InitializeMapping()
 }
 
 void
-SlidingInterface::RebuildMeshDB()
+SlidingInterface::RebuildMeshDB(const IterationContext& iteration)
 {
     std::ostream& LOG = Communicator::GetInstance()->Console();
 
+    // Free CGAL data
     mSelfCellFaceIndices.clear();
     mDonorCellFaceIndices.clear();
     mSelfCellPolygons.clear();
@@ -248,11 +250,16 @@ SlidingInterface::RebuildMeshDB()
     mDonorCellFaceAreas.clear();
     mCellFaceIntersections.clear();
 
+    // Free ANN data
+    if (mKDTree != NULL) delete mKDTree;
+    if (mDonorCentroids != NULL) annDeallocPts(mDonorCentroids);
+
     std::vector<const BlockPatches*> bps_ = { &SelfBlockPatches(), &DonorBlockPatches() };
     std::vector<std::vector<PatchCellFaceIndex>*> cfis_ = { &mSelfCellFaceIndices, &mDonorCellFaceIndices };
     std::vector<std::vector<Polygon_2>*> cfs_ = { &mSelfCellPolygons, &mDonorCellPolygons };
     std::vector<std::vector<double>*> cfas_ = { &mSelfCellFaceAreas, &mDonorCellFaceAreas };
 
+    // Construct CGAL polygons for both patches
     for (auto tup : boost::combine(bps_, cfis_, cfs_, cfas_))
     {
         const BlockPatches* bps;
@@ -262,8 +269,19 @@ SlidingInterface::RebuildMeshDB()
         boost::tie(bps, cfis, cfs, cfas) = tup;
         for (const auto& bp : *bps)
         {
+            const VirtualBlock* block = Roster::GetInstance()->GetBlock(bp.BlockID());
             PatchMeshes::const_iterator ipm = GetPatchMeshes().find(bp.UniqueID());
             const Structured<double>& XYZ = ipm->second;
+
+            Vector3 angle(0.0, 0.0, 0.0);
+            if (!block->IsStationary())
+            {
+                RotationalMotion *rm = dynamic_cast<RotationalMotion*>(block->GetRigidBodyMotion());
+                assert(rm); // FIXME: what about translational motion?
+                angle = rm->AngularVelocity() * iteration.Time();
+            }
+            double R[3][3];
+            Vector3::RotationMatrix(R, angle);
 
             IndexRange cfr = bp.CellFaceRange();
             IndexIJK i1 = bp.I1();
@@ -276,6 +294,13 @@ SlidingInterface::RebuildMeshDB()
                 p[1] = Vector3(XYZ(ijk - i2));
                 p[2] = Vector3(XYZ(ijk));
                 p[3] = Vector3(XYZ(ijk - i1));
+
+                for (int i = 0; i < 4; ++i)
+                {
+                    p[i].Apply(R);
+                    if (!block->IsStationary() && iteration.Time() > 0.0)
+                        LOG << p[i] << " rotated " << angle << std::endl;
+                }
 
                 int quadrant = 0;
                 Polygon_2 poly = MapTo2DRadial(quadrant, p);
@@ -411,7 +436,7 @@ SlidingInterface::MapMesh(const IterationContext& iteration)
 {
     if (mDirty || mIterContext.Time() != iteration.Time())
     {
-        RebuildMeshDB();
+        RebuildMeshDB(iteration);
         mIterContext = iteration;
     }
 }

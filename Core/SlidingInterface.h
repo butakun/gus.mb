@@ -73,7 +73,7 @@ protected:
     {}
 
     void DetectRadialInterface();
-    void RebuildMeshDB();
+    void RebuildMeshDB(const IterationContext& iteration);
 
     Point_2 MapTo2DRadial(const Vector3& p) const; // deprecated
     void MapTo2DRadial(double& theta, double& eta, const Vector3& p) const;
